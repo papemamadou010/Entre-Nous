@@ -2,18 +2,23 @@ const express = require('express');
 const app = express();
 require('dotenv').config();
 
-// Changez la ligne 6 par ceci :
-const db = require('./config/config/db');
+// Importer la connexion à la base de données
+const db = require('./config/db');
 
+// Importer les routes d'authentification
+const authRoutes = require('./routes/authRoutes');
 
-// Middleware pour lire les données des formulaires et du JSON
+// Middlewares pour récupérer les données envoyées par les formulaires
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Rendre le dossier public accessible (CSS, Images JS)
+// Rendre le dossier public accessible
 app.use(express.static('public'));
 
-// Route de test pour vérifier que le serveur fonctionne
+// Activer les routes d'authentification
+app.use('/auth', authRoutes);
+
+// Route d'accueil temporaire
 app.get('/', (req, res) => {
     res.send('<h1>Bienvenue sur EntreNous ! Le serveur fonctionne.</h1>');
 });
