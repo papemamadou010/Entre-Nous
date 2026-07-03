@@ -6,3 +6,12 @@ Content-Type: application/json
   "email": "jean.dupont@email.com",
   "password": "MonMotDePasseSecret123"
 }
+###
+### Tester la connexion d'un utilisateur
+POST http://localhost:3000/auth/login
+Content-Type: application/json
+
+{
+  "email": "jean.dupont@email.com",
+  "password": "MonMotDePasseSecret123"
+}
