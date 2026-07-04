@@ -1,33 +1,25 @@
 const User = require('../models/userModel');
 const bcrypt = require('bcrypt');
 
-// 1. LOGIQUE D'INSCRIPTION AVEC VÉRIFICATION STRICTE
+// 1. LOGIQUE D'INSCRIPTION
 exports.register = async (req, res) => {
     try {
         const { fullname, email, password } = req.body;
 
-        // 1. Vérifier si les champs sont reçus et non vides
         if (!fullname || !email || !password) {
-            return res.status(400).send('Veuillez remplir tous les champs du formulaire.');
+            return res.status(400).send('Veuillez remplir tous les champs.');
         }
 
-        // 2. VERIFICATION DU MOT DE PASSE FORT
-        // Au moins 8 caractères, 1 majuscule, 1 minuscule et 1 chiffre
         const passwordRegex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}$/;
-        
         if (!passwordRegex.test(password)) {
-            return res.status(400).send(
-                'Échec de l\'inscription : Le mot de passe doit contenir au moins 8 caractères, avec au moins une majuscule, une minuscule et un chiffre.'
-            );
+            return res.status(400).send('Le mot de passe doit contenir au moins 8 caractères, incluant une majuscule, une minuscule et un chiffre.');
         }
 
-        // 3. Vérifier si l'email est déjà utilisé
         const users = await User.findByEmail(email);
         if (users && users.length > 0) {
             return res.status(400).send('Cet email est déjà utilisé.');
         }
 
-        // 4. Sécuriser et enregistrer
         const hashedPassword = await bcrypt.hash(password, 10);
         await User.create(fullname, email, hashedPassword);
 
@@ -47,19 +39,25 @@ exports.login = async (req, res) => {
         }
 
         const users = await User.findByEmail(email);
+        
+        // On vérifie si le tableau de lignes MySQL est vide
         if (!users || users.length === 0) {
             return res.status(400).send('Email ou mot de passe incorrect.');
         }
 
+        // ALIGNEMENT : On cible le premier utilisateur trouvé dans la table
         const user = users[0];
 
+        // Comparaison du mot de passe saisi avec la clé hachée en BDD
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
             return res.status(400).send('Email ou mot de passe incorrect.');
         }
 
+        // Enregistrement des données dans la session utilisateur
         req.session.userId = user.id;
         req.session.userFullname = user.fullname;
+        req.session.userRole = user.role; 
 
         res.send(`Bienvenue ${user.fullname} ! Connexion réussie.`);
     } catch (error) {
@@ -78,7 +76,7 @@ exports.forgotPassword = async (req, res) => {
 
         const passwordRegex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}$/;
         if (!passwordRegex.test(newPassword)) {
-            return res.status(400).send('Erreur : Le nouveau mot de passe doit contenir au moins 8 caractères, incluant une majuscule, une minuscule et un chiffre.');
+            return res.status(400).send('Le nouveau mot de passe doit contenir au moins 8 caractères, incluant une majuscule, une minuscule et un chiffre.');
         }
 
         const users = await User.findByEmail(email);

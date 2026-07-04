@@ -10,13 +10,13 @@ const User = {
         return result;
     },
 
-    // 2. Chercher un utilisateur (pour Inscription et Connexion)
+    // 2. Chercher un utilisateur (Renvoie le tableau brut)
     findByEmail: async (email) => {
         const [rows] = await db.execute('SELECT * FROM users WHERE email = ?', [email]);
-        return rows;
+        return rows; 
     },
 
-    // 3. Modifier le mot de passe (pour Réinitialisation)
+    // 3. Modifier le mot de passe
     updatePassword: async (email, newHashedPassword) => {
         const [result] = await db.execute(
             'UPDATE users SET password = ? WHERE email = ?',
