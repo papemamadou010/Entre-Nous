@@ -1,26 +1,35 @@
 const express = require('express');
+const session = require('express-session');
+const path = require('path'); // Module natif pour gérer les chemins de fichiers sans erreur
 const app = express();
 require('dotenv').config();
 
-// Importer la connexion à la base de données
+// Importer la connexion BDD et les routes
 const db = require('./config/db');
-
-// Importer les routes d'authentification
 const authRoutes = require('./routes/authRoutes');
 
-// Middlewares pour récupérer les données envoyées par les formulaires
+// Middlewares obligatoires
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Rendre le dossier public accessible
-app.use(express.static('public'));
+// Configuration des Sessions Utilisateurs
+app.use(session({
+    secret: 'le_secret_de_notre_reseau_social_entrenous',
+    resave: false,
+    saveUninitialized: false,
+    cookie: { maxAge: 24 * 60 * 60 * 1000 } // Session active pendant 24h
+}));
 
-// Activer les routes d'authentification
+// Rendre les dossiers accessibles au navigateur
+app.use(express.static('public'));
+app.use(express.static('views'));
+
+// Activer le module d'authentification
 app.use('/auth', authRoutes);
 
-// Route d'accueil temporaire
+// Route d'accueil principale corrigée (affiche index.html dès l'entrée sur le site)
 app.get('/', (req, res) => {
-    res.send('<h1>Bienvenue sur EntreNous ! Le serveur fonctionne.</h1>');
+    res.sendFile(path.join(__dirname, 'views', 'index.html'));
 });
 
 // Démarrer le serveur

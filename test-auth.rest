@@ -1,3 +1,4 @@
+### 1. TESTER L'INSCRIPTION
 POST http://localhost:3000/auth/register
 Content-Type: application/json
 
@@ -6,12 +7,25 @@ Content-Type: application/json
   "email": "jean.dupont@email.com",
   "password": "MonMotDePasseSecret123"
 }
+
 ###
-### Tester la connexion d'un utilisateur
+
+### 2. TESTER LA CONNEXION
 POST http://localhost:3000/auth/login
 Content-Type: application/json
 
 {
   "email": "jean.dupont@email.com",
   "password": "MonMotDePasseSecret123"
+}
+
+###
+
+### 3. TESTER LE MOT DE PASSE OUBLIÉ
+POST http://localhost:3000/auth/forgot-password
+Content-Type: application/json
+
+{
+  "email": "jean.dupont@email.com",
+  "password": "NouveauMotDePasse456"
 }

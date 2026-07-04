@@ -1,7 +1,7 @@
 const db = require('../config/db');
 
 const User = {
-    // Insérer un nouvel utilisateur
+    // 1. Créer un compte
     create: async (fullname, email, hashedPassword) => {
         const [result] = await db.execute(
             'INSERT INTO users (fullname, email, password) VALUES (?, ?, ?)',
@@ -10,10 +10,19 @@ const User = {
         return result;
     },
 
-    // Chercher un utilisateur par email (pour vérifier s'il existe déjà)
+    // 2. Chercher un utilisateur (pour Inscription et Connexion)
     findByEmail: async (email) => {
         const [rows] = await db.execute('SELECT * FROM users WHERE email = ?', [email]);
-        return rows[0]; // Retourne l'utilisateur s'il existe, sinon undefined
+        return rows;
+    },
+
+    // 3. Modifier le mot de passe (pour Réinitialisation)
+    updatePassword: async (email, newHashedPassword) => {
+        const [result] = await db.execute(
+            'UPDATE users SET password = ? WHERE email = ?',
+            [newHashedPassword, email]
+        );
+        return result;
     }
 };
 
