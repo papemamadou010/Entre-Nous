@@ -29,9 +29,13 @@ exports.register = async (req, res) => {
     }
 };
 
-// 2. LOGIQUE DE CONNEXION
+// 2. LOGIQUE DE CONNEXION (CORRIGÉE AVEC REDIRECTION ET INDEX 0)
 exports.login = async (req, res) => {
     try {
+        // LIGNE DE SURVEILLANCE TEMPORAIRE (À AJOUTER)
+console.log("=== TENTATIVE DE CONNEXION ===");
+console.log("Données reçues du formulaire :", req.body);
+
         const { email, password } = req.body;
 
         if (!email || !password) {
@@ -45,7 +49,7 @@ exports.login = async (req, res) => {
             return res.status(400).send('Email ou mot de passe incorrect.');
         }
 
-        // ALIGNEMENT : On cible le premier utilisateur trouvé dans la table
+        // CORRECTION CRUCIALE : On cible le premier utilisateur du tableau brut
         const user = users[0];
 
         // Comparaison du mot de passe saisi avec la clé hachée en BDD
@@ -59,7 +63,8 @@ exports.login = async (req, res) => {
         req.session.userFullname = user.fullname;
         req.session.userRole = user.role; 
 
-        res.send(`Bienvenue ${user.fullname} ! Connexion réussie.`);
+        // REDIRECTION AUTOMATIQUE DIRECTE VERS LE FIL D'ACTUALITÉ
+        res.redirect('/home.html');
     } catch (error) {
         res.status(500).send('Erreur lors de la connexion : ' + error.message);
     }

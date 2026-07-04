@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EntreNous - Fil d'actualité</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f8fafc;
+            margin: 0;
+            padding-top: 60px;
+            transition: margin-left 0.3s ease;
+        }
+
+        /* BARRE SUPÉRIEURE (NAVBAR) */
+        .navbar {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            height: 54px;
+            background-color: #ffffff;
+            border-bottom: 1px solid #dbdbdb;
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            box-sizing: border-box;
+            z-index: 1000;
+        }
+
+        .menu-toggle-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #262626;
+            margin-right: 15px;
+        }
+
+        .navbar h1 {
+            font-size: 20px;
+            margin: 0;
+            color: #262626;
+        }
+
+        /* MENU LATÉRAL COULISSANT (SIDEBAR) */
+        .sidebar {
+            position: fixed;
+            top: 54px;
+            left: -250px; /* Caché par défaut */
+            width: 250px;
+            height: calc(100vh - 54px);
+            background-color: #ffffff;
+            border-right: 1px solid #dbdbdb;
+            transition: left 0.3s ease;
+            z-index: 999;
+            padding: 20px 0;
+        }
+
+        .sidebar.open {
+            left: 0; /* S'ouvre au clic */
+        }
+
+        .sidebar a {
+            display: block;
+            padding: 15px 25px;
+            color: #262626;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 16px;
+            transition: background 0.2s;
+        }
+
+        .sidebar a:hover {
+            background-color: #f1f5f9;
+            color: #0095f6;
+        }
+
+        /* CONTENEUR DU FIL D'ACTUALITÉ */
+        .feed-container {
+            width: 100%;
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 0 15px;
+            box-sizing: border-box;
+        }
+
+        .create-post-box {
+            background-color: #ffffff;
+            border: 1px solid #dbdbdb;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .create-post-box textarea {
+            width: 100%;
+            height: 60px;
+            border: 1px solid #f1f5f9;
+            background-color: #f8fafc;
+            border-radius: 6px;
+            padding: 10px;
+            resize: none;
+            box-sizing: border-box;
+            font-family: inherit;
+        }
+
+        .create-post-box button {
+            background-color: #0095f6;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 8px 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 10px;
+            float: right;
+        }
+
+        .post-card {
+            background-color: #ffffff;
+            border: 1px solid #dbdbdb;
+            border-radius: 8px;
+            margin-bottom: 24px;
+            padding: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Barre supérieure fixe -->
+    <nav class="navbar">
+        <button class="menu-toggle-btn" id="menuBtn">☰</button>
+        <h1>EntreNous</h1>
+    </nav>
+
+    <!-- Menu Coulissant Tiroir -->
+    <div class="sidebar" id="sidebarMenu">
+        <a href="/home.html">🏠 Accueil</a>
+        <a href="/messages.html">💬 Messages Privés</a>
+        <a href="/notifications.html">🔔 Notifications</a>
+        <a href="/profile.html">👤 Mon Profil</a>
+        <a href="/admin/dashboard.html" style="color: #dc2626;">🛠️ Espace Admin</a>
+        <hr style="border: 0; border-top: 1px solid #dbdbdb; margin: 20px 0;">
+        <a href="/">🚪 Déconnexion</a>
+    </div>
+
+    <!-- Fil d'actualité -->
+    <div class="feed-container">
+        <!-- Formulaire de Publication -->
+        <div class="create-post-box">
+            <form action="/posts/create" method="POST" enctype="multipart/form-data">
+                <textarea name="content" placeholder="Que voulez-vous partager aujourd'hui ?"></textarea>
+                <input type="file" name="image" accept="image/*" style="margin-top: 10px;">
+                <button type="submit">Publier</button>
+            </form>
+            <div style="clear: both;"></div>
+        </div>
+
+        <div class="post-card">
+            <h3>Bienvenue sur ton Fil d'actualité ! 🎉</h3>
+            <p>La redirection automatique fonctionne à la perfection. Clique sur le bouton ☰ en haut à gauche pour ouvrir ton menu coulissant retractable.</p>
+        </div>
+    </div>
+
+    <!-- Script JavaScript pour l'animation du menu -->
+    <script>
+        const menuBtn = document.getElementById('menuBtn');
+        const sidebarMenu = document.getElementById('sidebarMenu');
+
+        menuBtn.addEventListener('click', () => {
+            sidebarMenu.classList.toggle('open');
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!sidebarMenu.contains(e.target) && e.target !== menuBtn) {
+                sidebarMenu.classList.remove('open');
+            }
+        });
+    </script>
+</body>
+</html>
