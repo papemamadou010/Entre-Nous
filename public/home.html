@@ -148,20 +148,54 @@
     <!-- Fil d'actualité -->
     <div class="feed-container">
         <!-- Formulaire de Publication -->
-        <div class="create-post-box">
-            <form action="/posts/create" method="POST" enctype="multipart/form-data">
-                <textarea name="content" placeholder="Que voulez-vous partager aujourd'hui ?"></textarea>
-                <input type="file" name="image" accept="image/*" style="margin-top: 10px;">
-                <button type="submit">Publier</button>
-            </form>
-            <div style="clear: both;"></div>
-        </div>
+  <div class="create-post-box">
+   <div class="create-post-box">
+    <form id="postForm">
+        <textarea id="postContent" placeholder="Que voulez-vous partager aujourd'hui, Pape ?" required></textarea>
+        <input type="file" id="postImage" accept="image/*" style="margin-top: 10px; display: block;">
+        <button type="submit">Publier</button>
+    </form>
+    <div style="clear: both;"></div>
+</div>
 
-        <div class="post-card">
-            <h3>Bienvenue sur ton Fil d'actualité ! 🎉</h3>
-            <p>La redirection automatique fonctionne à la perfection. Clique sur le bouton ☰ en haut à gauche pour ouvrir ton menu coulissant retractable.</p>
-        </div>
-    </div>
+<script>
+    document.getElementById('postForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const content = document.getElementById('postContent').value;
+        const imageFile = document.getElementById('postImage').files[0];
+        let imageUrl = null;
+
+        // Si l'utilisateur sélectionne une image, on la convertit en chaîne Base64
+        if (imageFile) {
+            const reader = new FileReader();
+            imageUrl = await new Promise((resolve) => {
+                reader.onloadend = () => resolve(reader.result);
+                reader.readAsDataURL(imageFile);
+            });
+        }
+
+        // Envoi propre au format JSON
+        try {
+            const response = await fetch('/posts/create', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ content, imageUrl })
+            });
+
+            if (response.ok) {
+                alert("Publication envoyée avec succès !");
+                window.location.reload(); // Recharge la page proprement
+            } else {
+                alert("Erreur lors de la publication");
+            }
+        } catch (error) {
+            console.error("Erreur:", error);
+        }
+    });
+</script>
+
+
 
     <!-- Script JavaScript pour l'animation du menu -->
     <script>

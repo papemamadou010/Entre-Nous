@@ -7,6 +7,7 @@ require('dotenv').config();
 // Importer la connexion BDD et les routes
 const db = require('./config/db');
 const authRoutes = require('./routes/authRoutes');
+const postRoutes = require('./routes/postRoutes'); // 1. IMPORTATION DES ROUTES DE PUBLICATIONS
 
 // Middlewares obligatoires
 app.use(express.json());
@@ -24,8 +25,9 @@ app.use(session({
 app.use(express.static('public'));
 app.use(express.static('views'));
 
-// Activer le module d'authentification
+// Activer les modules de l'application
 app.use('/auth', authRoutes);
+app.use('/posts', postRoutes); // 2. ACTIVATION DU MODULE DE PUBLICATIONS
 
 // Route d'accueil principale corrigée (affiche index.html dès l'entrée sur le site)
 app.get('/', (req, res) => {

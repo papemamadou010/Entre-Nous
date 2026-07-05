@@ -1,12 +1,16 @@
 const db = require('../config/db');
 
 const Post = {
-    // Insérer une publication dans MySQL liée à l'utilisateur connecté
+    // Requête alignée avec la structure de votre table
     create: async (userId, content, imageUrl) => {
-        const [result] = await db.execute(
-            'INSERT INTO posts (user_id, content, image_url) VALUES (?, ?, ?)',
-            [userId, content, imageUrl]
-        );
+        // Si la colonne s'appelle 'image_url' ou 'image', on s'adapte dynamiquement
+        const [columns] = await db.execute('DESCRIBE posts');
+        const hasImageUrl = columns.some(col => col.Field === 'image_url');
+        
+        const columnName = hasImageUrl ? 'image_url' : 'image';
+        
+        const query = `INSERT INTO posts (user_id, content, ${columnName}) VALUES (?, ?, ?)`;
+        const [result] = await db.execute(query, [userId, content, imageUrl]);
         return result;
     }
 };

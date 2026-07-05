@@ -25,7 +25,7 @@
             margin-bottom: 10px;
         }
         h1 {
-            font-family: 'Comic Sans MS', cursive, sans-serif; /* Style temporaire en attendant un logo */
+            font-family: 'Comic Sans MS', cursive, sans-serif;
             color: #262626;
             margin-bottom: 30px;
             font-size: 32px;
@@ -83,6 +83,12 @@
             text-decoration: none;
             font-weight: 600;
         }
+        #error-message {
+            color: #ed4956;
+            font-size: 12px;
+            margin-top: 10px;
+            font-weight: 600;
+        }
     </style>
 </head>
 <body>
@@ -90,11 +96,14 @@
     <!-- 1ère Proposition : Connexion Directe -->
     <div class="auth-box">
         <h1>EntreNous</h1>
-        <form action="/auth/login" method="POST">
-            <input type="email" name="email" placeholder="Num. de mobile ou email" required>
-            <input type="password" name="password" placeholder="Mot de passe" required>
+        <form id="loginForm">
+            <input type="email" id="email" placeholder="Num. de mobile ou email" required>
+            <input type="password" id="password" placeholder="Mot de passe" required>
             <button type="submit">Se connecter</button>
         </form>
+        
+        <!-- Zone pour afficher les erreurs si le mot de passe est faux -->
+        <div id="error-message"></div>
         
         <div class="divider">OU</div>
         
@@ -105,6 +114,37 @@
     <div class="redirect-box">
         En ordre pour participer ? <a href="/auth/register.html">Inscris-toi</a>
     </div>
+
+    <!-- CORRECTION : Script JavaScript pour gérer la soumission et la redirection -->
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault(); // Empêche le rechargement de la page qui cassait tout
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const errorElement = document.getElementById('error-message');
+
+            errorElement.innerText = ""; // Nettoyer l'ancienne erreur
+
+            try {
+                const response = await fetch('/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+
+                // Si les identifiants sont bons, Express renvoie la redirection vers home.html
+                if (response.redirected) {
+                    window.location.href = response.url; 
+                } else {
+                    const errorText = await response.text();
+                    errorElement.innerText = errorText; // Affiche "Email ou mot de passe incorrect"
+                }
+            } catch (error) {
+                errorElement.innerText = "Erreur de connexion au serveur.";
+            }
+        });
+    </script>
 
 </body>
 </html>

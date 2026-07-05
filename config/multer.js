@@ -1,10 +1,11 @@
 const multer = require('multer');
 const path = require('path');
 
-// Configuration du dossier de stockage et du nom du fichier
+// Configuration du dossier de stockage avec un chemin absolu sécurisé
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        cb(null, 'public/uploads/posts/');
+        // __dirname remonte à la racine et cible précisément le bon dossier physique
+        cb(null, path.join(__dirname, '..', 'public', 'uploads', 'posts'));
     },
     filename: (req, file, cb) => {
         // Crée un nom unique (ex: 1717145620-image.jpg)
