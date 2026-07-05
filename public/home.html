@@ -5,12 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>EntreNous - Fil d'actualité</title>
     <style>
+        /* CONFIGURATION GLOBALE */
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             background-color: #f8fafc;
             margin: 0;
-            padding-top: 60px;
-            transition: margin-left 0.3s ease;
+            padding-top: 65px; /* Espace pour la navbar fixe */
+            color: #0f172a;
         }
 
         /* BARRE SUPÉRIEURE (NAVBAR) */
@@ -18,169 +19,342 @@
             position: fixed;
             top: 0;
             width: 100%;
-            height: 54px;
+            height: 60px;
             background-color: #ffffff;
-            border-bottom: 1px solid #dbdbdb;
+            border-bottom: 1px solid #e2e8f0;
             display: flex;
             align-items: center;
-            padding: 0 20px;
+            justify-content: space-between;
+            padding: 0 40px;
             box-sizing: border-box;
             z-index: 1000;
-        }
-
-        .menu-toggle-btn {
-            background: none;
-            border: none;
-            font-size: 24px;
-            cursor: pointer;
-            color: #262626;
-            margin-right: 15px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
         }
 
         .navbar h1 {
-            font-size: 20px;
+            font-size: 24px;
             margin: 0;
-            color: #262626;
+            font-weight: 800;
+            color: #0f172a;
+            letter-spacing: -0.5px;
         }
 
-        /* MENU LATÉRAL COULISSANT (SIDEBAR) */
-        .sidebar {
-            position: fixed;
-            top: 54px;
-            left: -250px; /* Caché par défaut */
-            width: 250px;
-            height: calc(100vh - 54px);
+        .navbar .user-badge-top {
+            font-size: 14px;
+            font-weight: 600;
+            background-color: #f1f5f9;
+            padding: 6px 14px;
+            border-radius: 20px;
+            color: #334155;
+        }
+
+        /* GRILLE PRINCIPALE EN 3 COLONNES */
+        .main-layout {
+            display: flex;
+            max-width: 1200px;
+            margin: 0 auto;
+            gap: 30px;
+            padding: 20px 20px;
+            box-sizing: border-box;
+        }
+
+        /* ================= COLONNE 1 : GAUCHE (NAVIGATION FIXED) ================= */
+        .left-column {
+            flex: 0 0 260px;
+            position: sticky;
+            top: 85px;
+            height: fit-content;
+        }
+
+        .sidebar-card {
             background-color: #ffffff;
-            border-right: 1px solid #dbdbdb;
-            transition: left 0.3s ease;
-            z-index: 999;
-            padding: 20px 0;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 15px 0;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
         }
 
-        .sidebar.open {
-            left: 0; /* S'ouvre au clic */
-        }
-
-        .sidebar a {
-            display: block;
-            padding: 15px 25px;
-            color: #262626;
+        .sidebar-card a {
+            display: flex;
+            align-items: center;
+            padding: 12px 25px;
+            color: #334155;
             text-decoration: none;
             font-weight: 600;
-            font-size: 16px;
-            transition: background 0.2s;
+            font-size: 15px;
+            transition: all 0.2s ease;
         }
 
-        .sidebar a:hover {
-            background-color: #f1f5f9;
+        .sidebar-card a:hover {
+            background-color: #f8fafc;
             color: #0095f6;
+            padding-left: 30px;
         }
 
-        /* CONTENEUR DU FIL D'ACTUALITÉ */
-        .feed-container {
-            width: 100%;
-            max-width: 600px;
-            margin: 20px auto;
-            padding: 0 15px;
-            box-sizing: border-box;
+        /* Style spécial pour le bouton d'espace admin de Pape */
+        .sidebar-card a.admin-btn-active {
+            color: #ffffff !important;
+            background-color: #dc2626;
+            margin: 10px 15px;
+            border-radius: 8px;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(220, 38, 38, 0.25);
+        }
+
+        .sidebar-card a.admin-btn-active:hover {
+            background-color: #b91c1c;
+            padding-left: 15px;
+        }
+
+        /* ================= COLONNE 2 : CENTRALE (FLUX) ================= */
+        .center-column {
+            flex: 1;
+            max-width: 620px;
         }
 
         .create-post-box {
             background-color: #ffffff;
-            border: 1px solid #dbdbdb;
-            border-radius: 8px;
-            padding: 15px;
-            margin-bottom: 20px;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
         }
 
         .create-post-box textarea {
             width: 100%;
-            height: 60px;
-            border: 1px solid #f1f5f9;
+            height: 80px;
+            border: 1px solid #e2e8f0;
             background-color: #f8fafc;
-            border-radius: 6px;
-            padding: 10px;
+            border-radius: 8px;
+            padding: 12px;
             resize: none;
             box-sizing: border-box;
             font-family: inherit;
+            font-size: 14px;
+            transition: border-color 0.2s;
         }
 
-        .create-post-box button {
+        .create-post-box textarea:focus {
+            outline: none;
+            border-color: #0095f6;
+        }
+
+        .form-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 15px;
+        }
+
+        /* Zone d'ajout d'image personnalisée */
+        .file-input-wrapper {
+            position: relative;
+            display: inline-block;
+        }
+
+        .file-input-btn {
+            background-color: #f1f5f9;
+            color: #475569;
+            padding: 8px 14px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .file-input-btn:hover {
+            background-color: #e2e8f0;
+        }
+
+        .create-post-box button[type="submit"] {
             background-color: #0095f6;
             color: white;
             border: none;
             border-radius: 6px;
-            padding: 8px 16px;
+            padding: 9px 20px;
             font-weight: 600;
+            font-size: 14px;
             cursor: pointer;
-            margin-top: 10px;
-            float: right;
+            transition: background 0.2s;
+        }
+
+        .create-post-box button[type="submit"]:hover {
+            background-color: #1877f2;
         }
 
         .post-card {
             background-color: #ffffff;
-            border: 1px solid #dbdbdb;
-            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
             margin-bottom: 24px;
+            padding: 25px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+
+        .post-card h3 {
+            margin: 0 0 10px 0;
+            font-size: 16px;
+            color: #0f172a;
+        }
+
+        .post-card p {
+            color: #475569;
+            font-size: 15px;
+            line-height: 1.5;
+            margin: 0;
+        }
+
+        /* ================= COLONNE 3 : DROITE (WIDGETS) ================= */
+        .right-column {
+            flex: 0 0 280px;
+            position: sticky;
+            top: 85px;
+            height: fit-content;
+        }
+
+        .widget-card {
+            background-color: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
             padding: 20px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            margin-bottom: 20px;
+        }
+
+        .widget-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 15px;
+        }
+
+        .suggestion-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            font-size: 14px;
+        }
+
+        .suggestion-name {
+            font-weight: 600;
+            color: #334155;
+        }
+
+        .follow-btn {
+            color: #0095f6;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 12px;
+        }
+
+        /* DESACTIVATION DES COLONNES SUR PETITS ECRANS (RESPONSIVE) */
+        @media (max-width: 1000px) {
+            .right-column { display: none; }
+        }
+        @media (max-width: 768px) {
+            .left-column { display: none; }
+            .navbar { padding: 0 20px; }
         }
     </style>
 </head>
 <body>
 
-    <!-- Barre supérieure fixe -->
+    <!-- Barre supérieure fixe unifiée -->
     <nav class="navbar">
-        <button class="menu-toggle-btn" id="menuBtn">☰</button>
         <h1>EntreNous</h1>
+        <div class="user-badge-top" id="userBadge">Membre</div>
     </nav>
 
-    <!-- Menu Coulissant Tiroir -->
-    <div class="sidebar" id="sidebarMenu">
-        <a href="/home.html">🏠 Accueil</a>
-        <a href="/messages.html">💬 Messages Privés</a>
-        <a href="/notifications.html">🔔 Notifications</a>
-        <a href="/profile.html">👤 Mon Profil</a>
-        <!-- CORRECTION SÉCURITÉ : Masqué par défaut (display: none) et ID ajouté -->
-        <a href="/admin/dashboard.html" id="adminLink" style="color: #dc2626; display: none;">🛠️ Espace Admin</a>
-        <hr style="border: 0; border-top: 1px solid #dbdbdb; margin: 20px 0;">
-        <a href="/">🚪 Déconnexion</a>
-    </div>
+    <!-- Mise en page principale en 3 colonnes -->
+    <main class="main-layout">
 
-    <!-- Fil d'actualité -->
-    <div class="feed-container">
-        <!-- Formulaire de Publication -->
-        <div class="create-post-box">
-            <form id="postForm">
-                <textarea id="postContent" placeholder="Que voulez-vous partager aujourd'hui, Pape ?" required></textarea>
-                <input type="file" id="postImage" accept="image/*" style="margin-top: 10px; display: block;">
-                <button type="submit">Publier</button>
-            </form>
-            <div style="clear: both;"></div>
-        </div>
+        <!-- ================= COLONNE GAUCHE : NAVIGATION FIXED ================= -->
+        <aside class="left-column">
+            <div class="sidebar-card">
+                <a href="/home.html">🏠 Accueil</a>
+                <a href="/messages.html">💬 Messages Privés</a>
+                <a href="/notifications.html">🔔 Notifications</a>
+                <a href="/profile.html">👤 Mon Profil</a>
+                
+                <!-- Le bouton rouge de l'Espace Admin de Pape -->
+                <a href="/admin/dashboard.html" id="adminLink" class="admin-btn-active" style="display: none;">🛠️ Espace Admin</a>
+                
+                <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 15px 0;">
+                <a href="/" style="color: #ef4444;">🚪 Déconnexion</a>
+            </div>
+        </aside>
 
-        <div class="post-card">
-            <h3>Bienvenue sur ton Fil d'actualité ! 🎉</h3>
-            <p>La zone de partage et le contrôle d'accès sont désormais sous haute sécurité.</p>
-        </div>
-    </div>
+        <!-- ================= COLONNE CENTRALE : FLUX D'ACTUALITÉ ================= -->
+        <section class="center-column">
+            <!-- Formulaire de Publication Moderne -->
+            <div class="create-post-box">
+                <form id="postForm">
+                    <textarea id="postContent" placeholder="Que voulez-vous partager aujourd'hui, Pape ?" required></textarea>
+                    
+                    <div class="form-actions">
+                        <!-- Bouton d'ajout d'image épuré -->
+                        <div class="file-input-wrapper">
+                            <label for="postImage" class="file-input-btn">📷 Ajouter une photo</label>
+                            <input type="file" id="postImage" accept="image/*" style="display: none;">
+                        </div>
+                        <button type="submit">Publier</button>
+                    </div>
+                </form>
+            </div>
 
-    <!-- Scripts JavaScript -->
+            <!-- Liste des publications -->
+            <div id="feedPosts">
+                <div class="post-card">
+                    <h3>Bienvenue sur ton Fil d'actualité ! 🎉</h3>
+                    <p>La zone de partage et le contrôle d'accès sont désormais sous haute sécurité et configurés en 3 colonnes.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= COLONNE DROITE : SUGGESTIONS & TENDANCES ================= -->
+                <aside class="right-column">
+            <!-- Boîte de Suggestions -->
+            <div class="widget-card">
+                <div class="widget-title">Suggestions pour vous</div>
+                <!-- C'est ICI qu'on place l'id pour cibler uniquement la liste des membres -->
+                <div id="suggestionList">
+                    <div class="suggestion-item">
+                        <span class="suggestion-name">Moussa Diop</span>
+                        <a href="#" class="follow-btn">Suivre</a>
+                    </div>
+                    <div class="suggestion-item">
+                        <span class="suggestion-name">Awa Ndiaye</span>
+                        <a href="#" class="follow-btn">Suivre</a>
+                    </div>
+                    <div class="suggestion-item">
+                        <span class="suggestion-name">Fatou Bakhoum</span>
+                        <a href="#" class="follow-btn">Suivre</a>
+                    </div>
+                </div>
+            </div>
+
+
+            <!-- Boîte de Tendances -->
+            <div class="widget-card">
+                <div class="widget-title">Tendances de la communauté</div>
+                <div style="font-size: 14px; color: #475569; font-weight: 600; margin-bottom: 8px;">#EntreNous2026</div>
+                <div style="font-size: 14px; color: #475569; font-weight: 600; margin-bottom: 8px;">#FullstackLaboratoire</div>
+                <div style="font-size: 14px; color: #475569; font-weight: 600;">#TechDakar</div>
+            </div>
+        </aside>
+
+    </main>
+
+    <!-- SCRIPTS JAVASCRIPT REPRIS ET ALIGNÉS À 100% -->
+     <!-- SCRIPTS JAVASCRIPT REPRIS, SYNCHRONISÉS ET SÉCURISÉS -->
+        <!-- SCRIPTS JAVASCRIPT REPRIS, SYNCHRONISÉS ET SÉCURISÉS -->
     <script>
-        // 1. Script d'animation du menu tiroir
-        const menuBtn = document.getElementById('menuBtn');
-        const sidebarMenu = document.getElementById('sidebarMenu');
-
-        menuBtn.addEventListener('click', () => {
-            sidebarMenu.classList.toggle('open');
-        });
-
-        document.addEventListener('click', (e) => {
-            if (!sidebarMenu.contains(e.target) && e.target !== menuBtn) {
-                sidebarMenu.classList.remove('open');
-            }
-        });
-
-        // 2. Script d'envoi de publication (Base64 JSON)
+        // 1. Script d'envoi de publication (Base64 JSON d'origine)
         document.getElementById('postForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
@@ -210,26 +384,67 @@
                     alert("Erreur lors de la publication");
                 }
             } catch (error) {
-                console.error("Erreur:", error);
+                console.error("Erreur d'envoi de post :", error);
             }
         });
 
-        // 3. CORRECTION SÉCURITÉ : Vérification du rôle à l'ouverture de la page
+        // 2. SÉCURITÉ ACCÈS : Seul Pape (ID 12) voit le bouton Espace Admin
         async function checkUserRole() {
             try {
                 const response = await fetch('/auth/me');
                 if (response.ok) {
                     const data = await response.json();
-                    // Affiche le bouton uniquement si le rôle retourné par MySQL est bien 'admin'
-                    if (data.role === 'admin') {
-                        document.getElementById('adminLink').style.display = 'block';
+                    
+                    if (data.fullname) {
+                        document.getElementById('userBadge').innerText = data.fullname;
+                    }
+                    
+                    // Blindage de la comparaison d'ID
+                    if (data.id && (Number(data.id) === 12 || data.id == 12) && data.role === 'admin') {
+                        document.getElementById('adminLink').style.display = 'flex';
+                    } else {
+                        document.getElementById('adminLink').style.display = 'none';
                     }
                 }
             } catch (err) {
-                console.error("Erreur de session:", err);
+                console.error("Erreur de session rôle :", err);
             }
         }
-        window.addEventListener('DOMContentLoaded', checkUserRole);
+
+        // 3. CHARGEMENT DYNAMIQUE DES VRAIS INSCRITS DE LA BASE DE DONNÉES
+        async function loadSuggestions() {
+            try {
+                const response = await fetch('/auth/suggestions'); 
+                const suggestionList = document.getElementById('suggestionList');
+                
+                if (response.ok) {
+                    const users = await response.json();
+                    
+                    if (users && users.length > 0) {
+                        suggestionList.innerHTML = users.map(user => `
+                            <div class="suggestion-item">
+                                <span class="suggestion-name">👤 ${user.fullname}</span>
+                                <a href="/profile.html?id=${user.id}" class="follow-btn">Voir</a>
+                            </div>
+                        `).join('');
+                        return;
+                    }
+                }
+                
+                suggestionList.innerHTML = '<p style="font-size: 13px; color: #94a3b8; margin: 10px 0; text-align: center;">Aucun autre membre pour le moment</p>';
+
+            } catch (err) {
+                console.error("Erreur lors du chargement des suggestions :", err);
+            }
+        }
+
+        // Déclenchement propre de toutes les fonctions de manière séquentielle
+        window.addEventListener('DOMContentLoaded', async () => {
+            await checkUserRole();
+            await loadSuggestions();
+        });
     </script>
+
+
 </body>
 </html>

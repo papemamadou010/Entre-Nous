@@ -4,16 +4,16 @@ const bcrypt = require('bcrypt');
 // 1. Confirmer le mot de passe de l'admin pour double authentification
 exports.verifyConfirm = async (req, res) => {
     try {
-        const { password } = req.body;
-        if (!req.session || !req.session.userId) return res.sendStatus(401);
+        // 🔒 VERROU : Si ce n'est pas Pape, on bloque direct
+        if (!req.session || req.session.userId !== 12) {
+            return res.status(403).send("Accès strictement interdit. Réservé à l'administrateur principal.");
+        }
 
-        // Récupérer le hash de l'admin connecté
+        const { password } = req.body;
         const [users] = await db.execute('SELECT password FROM users WHERE id = ?', [req.session.userId]);
         if (users.length === 0) return res.sendStatus(401);
 
         const user = users[0];
-
-        // Comparaison stricte avec la clé de secours ou le hash bcrypt
         const isMatch = (password === user.password || await bcrypt.compare(password, user.password));
         if (!isMatch) return res.status(400).send('Mot de passe incorrect.');
 
@@ -26,8 +26,13 @@ exports.verifyConfirm = async (req, res) => {
 // 2. Récupérer tous les utilisateurs pour le tableau de bord
 exports.getAllUsers = async (req, res) => {
     try {
+        // 🔒 VERROU : Si ce n'est pas Pape, on bloque direct
+        if (!req.session || req.session.userId !== 12) {
+            return res.status(403).send("Accès strictement interdit. Réservé à l'administrateur principal.");
+        }
+
         const [users] = await db.execute('SELECT id, fullname, email, role, created_at FROM users ORDER BY created_at DESC');
-        res.json(users); // Envoie la liste brute au format JSON pour l'interface frontend
+        res.json(users);
     } catch (error) {
         res.status(500).send('Erreur lors de la récupération des membres : ' + error.message);
     }
@@ -36,6 +41,11 @@ exports.getAllUsers = async (req, res) => {
 // 3. Récupérer toutes les publications de la plateforme (avec jointure SQL)
 exports.getAllPosts = async (req, res) => {
     try {
+        // 🔒 VERROU : Si ce n'est pas Pape, on bloque direct
+        if (!req.session || req.session.userId !== 12) {
+            return res.status(403).send("Accès strictement interdit. Réservé à l'administrateur principal.");
+        }
+
         const query = `
             SELECT posts.id, posts.content, posts.image_url, posts.created_at, users.fullname 
             FROM posts 
@@ -43,7 +53,7 @@ exports.getAllPosts = async (req, res) => {
             ORDER BY posts.created_at DESC
         `;
         const [posts] = await db.execute(query);
-        res.json(posts); // Envoie la liste des publications au format JSON
+        res.json(posts);
     } catch (error) {
         res.status(500).send('Erreur lors de la récupération des posts : ' + error.message);
     }
@@ -52,6 +62,11 @@ exports.getAllPosts = async (req, res) => {
 // 4. Supprimer (Bannir) un utilisateur de MySQL
 exports.deleteUser = async (req, res) => {
     try {
+        // 🔒 VERROU : Si ce n'est pas Pape, on bloque direct
+        if (!req.session || req.session.userId !== 12) {
+            return res.status(403).send("Accès strictement interdit. Réservé à l'administrateur principal.");
+        }
+
         const { id } = req.params;
         await db.execute('DELETE FROM users WHERE id = ?', [id]);
         res.sendStatus(200);
@@ -63,6 +78,11 @@ exports.deleteUser = async (req, res) => {
 // 5. Supprimer une publication inappropriée de MySQL
 exports.deletePost = async (req, res) => {
     try {
+        // 🔒 VERROU : Si ce n'est pas Pape, on bloque direct
+        if (!req.session || req.session.userId !== 12) {
+            return res.status(403).send("Accès strictement interdit. Réservé à l'administrateur principal.");
+        }
+
         const { id } = req.params;
         await db.execute('DELETE FROM posts WHERE id = ?', [id]);
         res.sendStatus(200);
@@ -74,6 +94,11 @@ exports.deletePost = async (req, res) => {
 // 6. Récupérer les détails complets d'un seul utilisateur spécifique pour la fiche au clic
 exports.getUserDetails = async (req, res) => {
     try {
+        // 🔒 VERROU : Si ce n'est pas Pape, on bloque direct
+        if (!req.session || req.session.userId !== 12) {
+            return res.status(403).send("Accès strictement interdit. Réservé à l'administrateur principal.");
+        }
+
         const { id } = req.params;
         const [users] = await db.execute(
             'SELECT id, fullname, email, role, birthdate, address, gender, phone, created_at FROM users WHERE id = ?',
@@ -84,15 +109,20 @@ exports.getUserDetails = async (req, res) => {
             return res.status(404).send('Utilisateur introuvable.');
         }
         
-        res.json(users[0]); // Envoie le profil unique (index 0) au format JSON
+        res.json(users[0]);
     } catch (error) {
         res.status(500).send('Erreur serveur : ' + error.message);
     }
 };
 
-// 7. Mettre à jour le profil de l'admin (ou de n'importe quel membre) - Mis en conformité avec MySQL2 execute
+// 7. Mettre à jour le profil de l'admin (ou de n'importe quel membre)
 exports.updateUserProfile = async (req, res) => {
     try {
+        // 🔒 VERROU : Si ce n'est pas Pape, on bloque direct
+        if (!req.session || req.session.userId !== 12) {
+            return res.status(403).send("Accès strictement interdit. Réservé à l'administrateur principal.");
+        }
+
         const userId = req.params.id;
         const { fullname, phone, address, gender } = req.body;
 
@@ -101,11 +131,31 @@ exports.updateUserProfile = async (req, res) => {
                      WHERE id = ?`;
 
         await db.execute(sql, [fullname, phone, address, gender, userId]);
-        
-        // On renvoie un succès JSON pour que le fichier HTML sache que c'est bien enregistré
         res.json({ success: true, message: "Profil mis à jour avec succès !" });
     } catch (error) {
         console.error("Erreur lors de la mise à jour de l'admin dans le contrôleur :", error);
         res.status(500).send("Impossible d'enregistrer les modifications en BDD : " + error.message);
+    }
+};
+
+// 8. Récupérer les suggestions de membres (Les 5 derniers inscrits sur EntreNous)
+exports.getSuggestions = async (req, res) => {
+    try {
+        // 🔒 NOTE : Ici, on n'ajoute pas le verrou d'ID 12 car n'importe quel membre connecté (simple ou admin) a le droit de voir ses suggestions de contact !
+        const currentUserId = req.session.userId || 12;
+
+        const query = `
+            SELECT id, fullname 
+            FROM users 
+            WHERE id != ? AND role != 'admin'
+            ORDER BY created_at DESC 
+            LIMIT 5
+        `;
+        
+        const [users] = await db.execute(query, [currentUserId]);
+        res.json(users);
+    } catch (error) {
+        console.error("Erreur récupération suggestions BDD :", error);
+        res.status(500).send("Erreur lors de la récupération des suggestions : " + error.message);
     }
 };
