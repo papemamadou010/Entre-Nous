@@ -1,16 +1,14 @@
 const db = require('../config/db');
 
 const User = {
-    // 1. Créer un compte
-     // Dans models/userModel.js
-    create: async (fullname, email, hashedPassword, birthdate, address, gender, phone) => {
+    // 1. Créer un compte (Ordre des arguments harmonisé avec le contrôleur)
+    create: async (fullname, email, hashedPassword, birthdate, phone, address, gender) => {
         const [result] = await db.execute(
-            'INSERT INTO users (fullname, email, password, birthdate, address, gender, phone) VALUES (?, ?, ?, ?, ?, ?, ?)',
-            [fullname, email, hashedPassword, birthdate, address, gender, phone]
+            'INSERT INTO users (fullname, email, password, birthdate, phone, address, gender) VALUES (?, ?, ?, ?, ?, ?, ?)',
+            [fullname, email, hashedPassword, birthdate, phone, address, gender]
         );
         return result;
     },
-
 
     // 2. Chercher un utilisateur (Renvoie le tableau brut)
     findByEmail: async (email) => {

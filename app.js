@@ -35,6 +35,10 @@ app.use('/admin-api', adminRoutes); // 2. ACTIVATION DU MODULE SECRÈT ADMIN
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'index.html'));
 });
+// Écraser ou ajouter cette route propre tout en bas de app.js (avant app.listen)
+app.get('/forgot-password.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'forgot-password.html'));
+});
 
 // Démarrer le serveur
 const PORT = process.env.PORT || 3000;

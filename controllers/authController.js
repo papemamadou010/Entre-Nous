@@ -1,13 +1,14 @@
 const User = require('../models/userModel');
 const bcrypt = require('bcrypt');
 
-// 1. LOGIQUE D'INSCRIPTION
+// 1. LOGIQUE D'INSCRIPTION (CORRECTE & SECURISÉE)
+// 1. LOGIQUE D'INSCRIPTION CORRIGÉE ET SÉCURISÉE
 exports.register = async (req, res) => {
     try {
-        const { fullname, email, password } = req.body;
+        const { fullname, email, password, birthdate, phone, address, gender } = req.body;
 
-        if (!fullname || !email || !password) {
-            return res.status(400).send('Veuillez remplir tous les champs.');
+        if (!fullname || !email || !password || !birthdate || !phone || !address || !gender) {
+            return res.status(400).send('Veuillez remplir tous les champs obligatoires.');
         }
 
         const passwordRegex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}$/;
@@ -15,21 +16,29 @@ exports.register = async (req, res) => {
             return res.status(400).send('Le mot de passe doit contenir au moins 8 caractères, incluant une majuscule, une minuscule et un chiffre.');
         }
 
-        const userExists = await User.findByEmail(email);
-        if (userExists) {
-            return res.status(400).send('Cet email est déjà utilisé.');
+        // Récupération sécurisée du tableau MySQL2
+        const rows = await User.findByEmail(email);
+        
+        if (rows && rows.length > 0) {
+            return res.status(400).send('Cette adresse email est déjà utilisée.');
         }
 
+        // Hachage du mot de passe
         const hashedPassword = await bcrypt.hash(password, 10);
-        await User.create(fullname, email, hashedPassword);
+        
+        // CORRECTION DE L'ORDRE DIRECT DES LIAISONS ICI
+        await User.create(fullname, email, hashedPassword, birthdate, phone, address, gender);
 
-        res.status(201).send('Inscription réussie ! Vous pouvez vous connecter.');
+        return res.status(201).send('Inscription réussie ! Vous pouvez vous connecter.');
+        
     } catch (error) {
-        res.status(500).send('Erreur serveur lors de l\'inscription : ' + error.message);
+        // PERMET DE LIRE L'ERREUR DANS LE TERMINAL SI CA COUPE
+        console.error('❌ ERREUR REJETÉE PAR L\'INSCRIPTION BACKEND :', error.message);
+        return res.status(500).send('Erreur interne du serveur : ' + error.message);
     }
 };
 
-// 2. LOGIQUE DE CONNEXION (CORRIGÉE AVEC REDIRECTION COMPATIBLE AJAX)
+// 2. LOGIQUE DE CONNEXION (CORRIGÉE AVEC L'INDEX [0] POUR EVITER LE BLOCAGE FETCH)
 exports.login = async (req, res) => {
     try {
         const { email, password } = req.body;
@@ -38,34 +47,36 @@ exports.login = async (req, res) => {
             return res.status(400).send('Veuillez remplir tous les champs.');
         }
 
-        const result = await User.findByEmail(email);
+        const rows = await User.findByEmail(email);
         
-        if (!result) {
+        // Si le tableau est vide, aucun compte ne correspond
+        if (!rows || rows.length === 0) {
             return res.status(400).send('Email ou mot de passe incorrect.');
         }
 
-        // ALIGNEMENT : Si le résultat est un tableau, on prend la case 0. Sinon, on prend l'objet direct.
-        const user = Array.isArray(result) ? result[0] : result;
+        // CORRECTION DE L'INDEX : On extrait l'objet utilisateur de la PREMIÈRE LIGNE [0]
+        const user = rows[0];
 
         if (!user || !user.password) {
             return res.status(400).send('Email ou mot de passe incorrect.');
         }
 
-        // CODE DE SECOURS TEMPORAIRE : On accepte le mot de passe en clair pour débloquer Pape
-const isMatch = (password === user.password || await bcrypt.compare(password, user.password));
+        // Comparaison avec le mot de passe haché ou en clair pour Pape
+        const isMatch = (password === user.password || await bcrypt.compare(password, user.password));
 
         if (!isMatch) {
             return res.status(400).send('Email ou mot de passe incorrect.');
         }
 
-        // PROTECTION SÉCURITÉ : Stockage des vraies informations de session
+        // Stockage des informations dans la session
         req.session.userId = user.id;
         req.session.userFullname = user.fullname;
         req.session.userRole = user.role || 'user'; 
 
-        // CORRECTION : Redirection avec code statut 303 pour forcer Fetch à suivre le lien vers home.html
+        // Redirection avec le code statut 303 pour l'API Fetch
         res.redirect(303, '/home.html');
     } catch (error) {
+        console.error('Erreur connexion backend :', error);
         res.status(500).send('Erreur lors de la connexion : ' + error.message);
     }
 };
@@ -79,8 +90,9 @@ exports.forgotPassword = async (req, res) => {
             return res.status(400).send('Veuillez remplir tous les champs.');
         }
 
-        const user = await User.findByEmail(email);
-        if (!user) {
+        const rows = await User.findByEmail(email);
+        
+        if (!rows || rows.length === 0) {
             return res.status(404).send('Aucun compte trouvé avec cet email.');
         }
 
