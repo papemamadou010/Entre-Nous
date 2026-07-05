@@ -12,8 +12,10 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
+            min-height: 100vh;
             margin: 0;
+            padding: 20px 0;
+            box-sizing: border-box;
         }
         .auth-container {
             background-color: #ffffff;
@@ -27,7 +29,7 @@
             color: #262626;
             margin-bottom: 20px;
         }
-        input {
+        input, select {
             width: 100%;
             padding: 9px;
             margin-bottom: 10px;
@@ -36,6 +38,19 @@
             border-radius: 3px;
             box-sizing: border-box;
             font-size: 12px;
+            font-family: inherit;
+        }
+        select {
+            color: #262626;
+            cursor: pointer;
+        }
+        label {
+            display: block;
+            text-align: left;
+            font-size: 11px;
+            color: #8e8e8e;
+            margin-bottom: 4px;
+            font-weight: 600;
         }
         button {
             width: 100%;
@@ -43,10 +58,11 @@
             color: white;
             border: none;
             border-radius: 4px;
-            padding: 7px 0;
+            padding: 9px 0;
             font-weight: 600;
             cursor: pointer;
             margin-top: 10px;
+            font-size: 14px;
         }
         button:hover {
             background-color: #1877f2;
@@ -61,22 +77,90 @@
             text-decoration: none;
             font-weight: 600;
         }
+        #message-box {
+            font-size: 12px;
+            margin-top: 12px;
+            font-weight: 600;
+        }
+        .success { color: #22c55e; }
+        .error { color: #ef4444; }
     </style>
 </head>
 <body>
 
     <div class="auth-container">
         <h2>EntreNous</h2>
-        <p>Inscris-toi pour voir les publications de tes amis.</p>
+        <p style="margin-bottom: 25px;">Inscris-toi pour voir les publications de tes amis.</p>
         
-        <!-- Attention : l'action pointe exactement vers ta route backend -->
-        <form action="/auth/register" method="POST">
-            <input type="text" name="fullname" placeholder="Nom complet" required>
-            <input type="email" name="email" placeholder="Num. de mobile ou email" required>
-            <input type="password" name="password" placeholder="Mot de passe" required>
+        <!-- Formulaire contrôlé par JavaScript -->
+        <form id="registerForm">
+            <input type="text" id="fullname" placeholder="Nom complet" required>
+            <input type="email" id="email" placeholder="Adresse email" required>
+            <input type="password" id="password" placeholder="Mot de passe" required>
+            
+            <!-- NOUVEAUX CHAMPS REQUIS -->
+            <label for="birthdate">DATE DE NAISSANCE</label>
+            <input type="date" id="birthdate" required>
+            
+            <input type="text" id="phone" placeholder="Numéro de téléphone" required>
+            <input type="text" id="address" placeholder="Adresse de résidence (ex: Dakar)" required>
+            
+            <select id="gender" required>
+                <option value="">Sélectionner votre genre</option>
+                <option value="Masculin">Masculin</option>
+                <option value="Féminin">Féminin</option>
+            </select>
+            
             <button type="submit">S'inscrire</button>
         </form>
+
+        <div id="message-box"></div>
+
+        <p>Tu as déjà un compte ? <a href="/">Connecte-toi</a></p>
     </div>
 
+    <script>
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault(); // Bloque le rechargement natif pour traiter le JSON
+
+            const messageBox = document.getElementById('message-box');
+            messageBox.className = "";
+            messageBox.innerText = "";
+
+            // Récupération de l'ensemble des données du formulaire
+            const fullname = document.getElementById('fullname').value;
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const birthdate = document.getElementById('birthdate').value;
+            const phone = document.getElementById('phone').value;
+            const address = document.getElementById('address').value;
+            const gender = document.getElementById('gender').value;
+
+            try {
+                const response = await fetch('/auth/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ fullname, email, password, birthdate, phone, address, gender })
+                });
+
+                const text = await response.text();
+
+                if (response.status === 201) {
+                    messageBox.className = "success";
+                    messageBox.innerText = text;
+                    // Redirection automatique vers la page de connexion après 2 secondes
+                    setTimeout(() => {
+                        window.location.href = "/";
+                    }, 2000);
+                } else {
+                    messageBox.className = "error";
+                    messageBox.innerText = text;
+                }
+            } catch (error) {
+                messageBox.className = "error";
+                messageBox.innerText = "Erreur de connexion avec le serveur.";
+            }
+        });
+    </script>
 </body>
 </html>
