@@ -7,7 +7,8 @@ require('dotenv').config();
 // Importer la connexion BDD et les routes
 const db = require('./config/db');
 const authRoutes = require('./routes/authRoutes');
-const postRoutes = require('./routes/postRoutes'); // 1. IMPORTATION DES ROUTES DE PUBLICATIONS
+const postRoutes = require('./routes/postRoutes');
+const adminRoutes = require('./routes/adminRoutes'); // 1. IMPORTATION DES ROUTES ADMIN
 
 // Middlewares obligatoires
 app.use(express.json());
@@ -27,7 +28,8 @@ app.use(express.static('views'));
 
 // Activer les modules de l'application
 app.use('/auth', authRoutes);
-app.use('/posts', postRoutes); // 2. ACTIVATION DU MODULE DE PUBLICATIONS
+app.use('/posts', postRoutes);
+app.use('/admin-api', adminRoutes); // 2. ACTIVATION DU MODULE SECRÈT ADMIN
 
 // Route d'accueil principale corrigée (affiche index.html dès l'entrée sur le site)
 app.get('/', (req, res) => {

@@ -140,7 +140,8 @@
         <a href="/messages.html">💬 Messages Privés</a>
         <a href="/notifications.html">🔔 Notifications</a>
         <a href="/profile.html">👤 Mon Profil</a>
-        <a href="/admin/dashboard.html" style="color: #dc2626;">🛠️ Espace Admin</a>
+        <!-- CORRECTION SÉCURITÉ : Masqué par défaut (display: none) et ID ajouté -->
+        <a href="/admin/dashboard.html" id="adminLink" style="color: #dc2626; display: none;">🛠️ Espace Admin</a>
         <hr style="border: 0; border-top: 1px solid #dbdbdb; margin: 20px 0;">
         <a href="/">🚪 Déconnexion</a>
     </div>
@@ -148,57 +149,24 @@
     <!-- Fil d'actualité -->
     <div class="feed-container">
         <!-- Formulaire de Publication -->
-  <div class="create-post-box">
-   <div class="create-post-box">
-    <form id="postForm">
-        <textarea id="postContent" placeholder="Que voulez-vous partager aujourd'hui, Pape ?" required></textarea>
-        <input type="file" id="postImage" accept="image/*" style="margin-top: 10px; display: block;">
-        <button type="submit">Publier</button>
-    </form>
-    <div style="clear: both;"></div>
-</div>
+        <div class="create-post-box">
+            <form id="postForm">
+                <textarea id="postContent" placeholder="Que voulez-vous partager aujourd'hui, Pape ?" required></textarea>
+                <input type="file" id="postImage" accept="image/*" style="margin-top: 10px; display: block;">
+                <button type="submit">Publier</button>
+            </form>
+            <div style="clear: both;"></div>
+        </div>
 
-<script>
-    document.getElementById('postForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        
-        const content = document.getElementById('postContent').value;
-        const imageFile = document.getElementById('postImage').files[0];
-        let imageUrl = null;
+        <div class="post-card">
+            <h3>Bienvenue sur ton Fil d'actualité ! 🎉</h3>
+            <p>La zone de partage et le contrôle d'accès sont désormais sous haute sécurité.</p>
+        </div>
+    </div>
 
-        // Si l'utilisateur sélectionne une image, on la convertit en chaîne Base64
-        if (imageFile) {
-            const reader = new FileReader();
-            imageUrl = await new Promise((resolve) => {
-                reader.onloadend = () => resolve(reader.result);
-                reader.readAsDataURL(imageFile);
-            });
-        }
-
-        // Envoi propre au format JSON
-        try {
-            const response = await fetch('/posts/create', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ content, imageUrl })
-            });
-
-            if (response.ok) {
-                alert("Publication envoyée avec succès !");
-                window.location.reload(); // Recharge la page proprement
-            } else {
-                alert("Erreur lors de la publication");
-            }
-        } catch (error) {
-            console.error("Erreur:", error);
-        }
-    });
-</script>
-
-
-
-    <!-- Script JavaScript pour l'animation du menu -->
+    <!-- Scripts JavaScript -->
     <script>
+        // 1. Script d'animation du menu tiroir
         const menuBtn = document.getElementById('menuBtn');
         const sidebarMenu = document.getElementById('sidebarMenu');
 
@@ -211,6 +179,57 @@
                 sidebarMenu.classList.remove('open');
             }
         });
+
+        // 2. Script d'envoi de publication (Base64 JSON)
+        document.getElementById('postForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const content = document.getElementById('postContent').value;
+            const imageFile = document.getElementById('postImage').files[0];
+            let imageUrl = null;
+
+            if (imageFile) {
+                const reader = new FileReader();
+                imageUrl = await new Promise((resolve) => {
+                    reader.onloadend = () => resolve(reader.result);
+                    reader.readAsDataURL(imageFile);
+                });
+            }
+
+            try {
+                const response = await fetch('/posts/create', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ content, imageUrl })
+                });
+
+                if (response.ok) {
+                    alert("Publication envoyée avec succès !");
+                    window.location.reload();
+                } else {
+                    alert("Erreur lors de la publication");
+                }
+            } catch (error) {
+                console.error("Erreur:", error);
+            }
+        });
+
+        // 3. CORRECTION SÉCURITÉ : Vérification du rôle à l'ouverture de la page
+        async function checkUserRole() {
+            try {
+                const response = await fetch('/auth/me');
+                if (response.ok) {
+                    const data = await response.json();
+                    // Affiche le bouton uniquement si le rôle retourné par MySQL est bien 'admin'
+                    if (data.role === 'admin') {
+                        document.getElementById('adminLink').style.display = 'block';
+                    }
+                }
+            } catch (err) {
+                console.error("Erreur de session:", err);
+            }
+        }
+        window.addEventListener('DOMContentLoaded', checkUserRole);
     </script>
 </body>
 </html>

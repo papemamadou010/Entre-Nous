@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EntreNous - Espace Administration</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f8fafc;
+            margin: 0;
+            padding: 30px;
+            color: #1e293b;
+        }
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 20px;
+        }
+        h1 { margin: 0; font-size: 28px; color: #0f172a; }
+        h2 { font-size: 20px; margin-top: 40px; color: #334155; }
+        .back-btn {
+            background-color: #64748b;
+            color: white;
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        .back-btn:hover { background-color: #475569; }
+        
+        /* Style des Tableaux */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+            margin-bottom: 30px;
+        }
+        th, td {
+            padding: 14px 20px;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        th {
+            background-color: #0f172a;
+            color: white;
+            font-weight: 600;
+        }
+        tr:hover { background-color: #f8fafc; }
+        
+        /* Badges de Rôle */
+        .badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+        .badge-admin { background-color: #fee2e2; color: #991b1b; }
+        .badge-user { background-color: #e0f2fe; color: #0369a1; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="header">
+            <h1>🛠️ Panneau de Contrôle Administrateur</h1>
+            <a href="/home.html" class="back-btn">⬅️ Retour au Flux</a>
+        </div>
+
+        <!-- SECTION 1 : LES MEMBRES -->
+        <h2>👤 Gestion des Membres Inscrits</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nom Complet</th>
+                    <th>Adresse Email</th>
+                    <th>Statut / Rôle</th>
+                </tr>
+            </thead>
+            <tbody id="usersTableBody">
+                <!-- Les lignes vont s'insérer ici automatiquement -->
+            </tbody>
+        </table>
+
+        <!-- SECTION 2 : LES PUBLICATIONS -->
+        <h2>📝 Surveillance des Publications du Flux</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Auteur</th>
+                    <th>Contenu du Message</th>
+                    <th>Date de création</th>
+                </tr>
+            </thead>
+            <tbody id="postsTableBody">
+                <!-- Les lignes vont s'insérer ici automatiquement -->
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        // Fonction automatique pour charger les données du Backend
+        async function loadDashboardData() {
+            try {
+                // 1. Récupérer et afficher les utilisateurs [1]
+                const usersResponse = await fetch('/admin-api/users');
+                if (usersResponse.ok) {
+                    const users = await usersResponse.json();
+                    const usersBody = document.getElementById('usersTableBody');
+                    usersBody.innerHTML = users.map(user => `
+                        <tr>
+                            <td><b>#${user.id}</b></td>
+                            <td>${user.fullname}</td>
+                            <td>${user.email}</td>
+                            <td><span class="badge ${user.role === 'admin' ? 'badge-admin' : 'badge-user'}">${user.role}</span></td>
+                        </tr>
+                    `).join('');
+                }
+
+                // 2. Récupérer et afficher les publications [1]
+                const postsResponse = await fetch('/admin-api/posts');
+                if (postsResponse.ok) {
+                    const posts = await postsResponse.json();
+                    const postsBody = document.getElementById('postsTableBody');
+                    postsBody.innerHTML = posts.map(post => `
+                        <tr>
+                            <td>#${post.id}</td>
+                            <td><b>${post.fullname}</b></td>
+                            <td>${post.content}</td>
+                            <td>${new Date(post.created_at).toLocaleDateString('fr-FR')}</td>
+                        </tr>
+                    `).join('');
+                }
+            } catch (error) {
+                console.error("Erreur lors du chargement du dashboard :", error);
+            }
+        }
+
+        // Lancer le chargement dès l'ouverture de la page
+        window.onload = loadDashboardData;
+    </script>
+</body>
+</html>

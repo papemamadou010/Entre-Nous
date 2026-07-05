@@ -25,7 +25,8 @@
             margin-bottom: 10px;
         }
         h1 {
-            font-family: 'Comic Sans MS', cursive, sans-serif;
+            font-family: 'Segoe UI', sans-serif;
+            font-weight: bold;
             color: #262626;
             margin-bottom: 30px;
             font-size: 32px;
@@ -93,52 +94,50 @@
 </head>
 <body>
 
-    <!-- 1ère Proposition : Connexion Directe -->
     <div class="auth-box">
         <h1>EntreNous</h1>
+        <!-- Formulaire contrôlé par JavaScript -->
         <form id="loginForm">
             <input type="email" id="email" placeholder="Num. de mobile ou email" required>
             <input type="password" id="password" placeholder="Mot de passe" required>
             <button type="submit">Se connecter</button>
         </form>
         
-        <!-- Zone pour afficher les erreurs si le mot de passe est faux -->
         <div id="error-message"></div>
         
         <div class="divider">OU</div>
-        
         <a href="/auth/forgot-password.html" class="forgot-link">Mot de passe oublié ?</a>
     </div>
 
-    <!-- 2ème Proposition : Possibilité de s'inscrire -->
     <div class="redirect-box">
         En ordre pour participer ? <a href="/auth/register.html">Inscris-toi</a>
     </div>
 
-    <!-- CORRECTION : Script JavaScript pour gérer la soumission et la redirection -->
+    <!-- LE CODE DE TRANSMISSION INTÉLLIGENT CORRIGÉ -->
     <script>
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
-            e.preventDefault(); // Empêche le rechargement de la page qui cassait tout
+            e.preventDefault(); // Bloque le vieux rechargement qui effaçait la session
             
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
             const errorElement = document.getElementById('error-message');
 
-            errorElement.innerText = ""; // Nettoyer l'ancienne erreur
+            errorElement.innerText = "";
 
             try {
+                // Envoi des identifiants au format JSON strict
                 const response = await fetch('/auth/login', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email, password })
                 });
 
-                // Si les identifiants sont bons, Express renvoie la redirection vers home.html
                 if (response.redirected) {
-                    window.location.href = response.url; 
+                    // Si Express accepte, on suit la redirection automatique vers home.html
+                    window.location.href = response.url;
                 } else {
                     const errorText = await response.text();
-                    errorElement.innerText = errorText; // Affiche "Email ou mot de passe incorrect"
+                    errorElement.innerText = errorText;
                 }
             } catch (error) {
                 errorElement.innerText = "Erreur de connexion au serveur.";
