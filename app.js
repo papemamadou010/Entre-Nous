@@ -6,6 +6,22 @@ require('dotenv').config();
 
 // Importer la connexion BDD et les routes
 const db = require('./config/db');
+
+
+// 🛠️ SCRIPT AUTOMATIQUE DE MISE À NIVEAU DE LA BASE DE DONNÉES (AJOUT AVATAR + BIO)
+db.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar_url LONGTEXT NULL")
+  .then(() => db.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS bio TEXT NULL"))
+  .then(() => db.execute("ALTER TABLE users MODIFY COLUMN avatar_url LONGTEXT NULL"))
+  .then(() => console.log("🚀 BASE DE DONNÉES PRÊTE : Colonnes 'avatar_url' et 'bio' activées !"))
+  .catch(err => console.error("❌ Erreur de mise à niveau BDD :", err.message));
+
+// 🛠️ SCRIPT AUTOMATIQUE DE MISE À NIVEAU DE LA BASE DE DONNÉES
+// Crée et configure la colonne avatar_url au format maximal LONGTEXT pour les images Base64
+db.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar_url LONGTEXT NULL")
+  .then(() => db.execute("ALTER TABLE users MODIFY COLUMN avatar_url LONGTEXT NULL"))
+  .then(() => console.log("🚀 BASE DE DONNÉES ENTRAÎNÉE : Colonne 'avatar_url' activée en LONGTEXT !"))
+  .catch(err => console.error("❌ Erreur de mise à niveau BDD :", err.message));
+
 const authRoutes = require('./routes/authRoutes');
 const postRoutes = require('./routes/postRoutes');
 const adminRoutes = require('./routes/adminRoutes'); // 1. IMPORTATION DES ROUTES ADMIN

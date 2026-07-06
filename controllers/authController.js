@@ -1,8 +1,8 @@
 const User = require('../models/userModel');
 const bcrypt = require('bcrypt');
+const db = require('../config/db'); // Importation de la connexion BDD
 
-// 1. LOGIQUE D'INSCRIPTION (CORRECTE & SECURISÉE)
-// 1. LOGIQUE D'INSCRIPTION CORRIGÉE ET SÉCURISÉE
+// 1. LOGIQUE D'INSCRIPTION
 exports.register = async (req, res) => {
     try {
         const { fullname, email, password, birthdate, phone, address, gender } = req.body;
@@ -16,29 +16,23 @@ exports.register = async (req, res) => {
             return res.status(400).send('Le mot de passe doit contenir au moins 8 caractères, incluant une majuscule, une minuscule et un chiffre.');
         }
 
-        // Récupération sécurisée du tableau MySQL2
         const rows = await User.findByEmail(email);
         
         if (rows && rows.length > 0) {
             return res.status(400).send('Cette adresse email est déjà utilisée.');
         }
 
-        // Hachage du mot de passe
         const hashedPassword = await bcrypt.hash(password, 10);
-        
-        // CORRECTION DE L'ORDRE DIRECT DES LIAISONS ICI
         await User.create(fullname, email, hashedPassword, birthdate, phone, address, gender);
 
-        return res.status(201).send('Inscription réussie ! Vous pouvez vous connecter.');
-        
+        res.status(201).send('Inscription réussie ! Vous pouvez vous connecter.');
     } catch (error) {
-        // PERMET DE LIRE L'ERREUR DANS LE TERMINAL SI CA COUPE
-        console.error('❌ ERREUR REJETÉE PAR L\'INSCRIPTION BACKEND :', error.message);
-        return res.status(500).send('Erreur interne du serveur : ' + error.message);
+        console.error('Erreur inscription backend :', error);
+        res.status(500).send('Erreur serveur lors de l\'inscription : ' + error.message);
     }
 };
 
-// 2. LOGIQUE DE CONNEXION (CORRIGÉE AVEC L'INDEX [0] POUR EVITER LE BLOCAGE FETCH)
+// 2. LOGIQUE DE CONNEXION
 exports.login = async (req, res) => {
     try {
         const { email, password } = req.body;
@@ -49,31 +43,26 @@ exports.login = async (req, res) => {
 
         const rows = await User.findByEmail(email);
         
-        // Si le tableau est vide, aucun compte ne correspond
         if (!rows || rows.length === 0) {
             return res.status(400).send('Email ou mot de passe incorrect.');
         }
 
-        // CORRECTION DE L'INDEX : On extrait l'objet utilisateur de la PREMIÈRE LIGNE [0]
         const user = rows[0];
 
         if (!user || !user.password) {
             return res.status(400).send('Email ou mot de passe incorrect.');
         }
 
-        // Comparaison avec le mot de passe haché ou en clair pour Pape
         const isMatch = (password === user.password || await bcrypt.compare(password, user.password));
 
         if (!isMatch) {
             return res.status(400).send('Email ou mot de passe incorrect.');
         }
 
-        // Stockage des informations dans la session
         req.session.userId = user.id;
         req.session.userFullname = user.fullname;
         req.session.userRole = user.role || 'user'; 
 
-        // Redirection avec le code statut 303 pour l'API Fetch
         res.redirect(303, '/home.html');
     } catch (error) {
         console.error('Erreur connexion backend :', error);
@@ -102,5 +91,68 @@ exports.forgotPassword = async (req, res) => {
         res.send('Votre mot de passe a bien été réinitialisé !');
     } catch (error) {
         res.status(500).send('Erreur lors de la réinitialisation : ' + error.message);
+    }
+};
+
+// 4. METTRE À JOUR LA PHOTO DE PROFIL EN BASE64
+exports.updateAvatar = async (req, res) => {
+    try {
+        if (!req.session || !req.session.userId) {
+            return res.status(401).send("Non connecté");
+        }
+
+        const { avatar_url } = req.body;
+        const userId = req.session.userId;
+
+        const query = 'UPDATE users SET avatar_url = ? WHERE id = ?';
+        await db.execute(query, [avatar_url, userId]);
+
+        res.status(200).send("Photo de profil enregistrée avec succès !");
+    } catch (error) {
+        console.error("Erreur serveur avatar :", error);
+        res.status(500).send("Erreur lors de l'enregistrement de l'image : " + error.message);
+    }
+};
+
+// 5. METTRE À JOUR LES INFORMATIONS TEXTUELLES (BIO, PHONE, ADDRESS)
+exports.updateProfileInfos = async (req, res) => {
+    try {
+        if (!req.session || !req.session.userId) {
+            return res.status(401).send("Non connecté");
+        }
+
+        const { bio, phone, address } = req.body;
+        const userId = req.session.userId;
+
+        const query = 'UPDATE users SET bio = ?, phone = ?, address = ? WHERE id = ?';
+        await db.execute(query, [bio, phone, address, userId]);
+
+        res.status(200).send("Informations de profil mises à jour !");
+    } catch (error) {
+        console.error("Erreur mise à jour infos profil :", error);
+        res.status(500).send("Erreur lors de la mise à jour des informations : " + error.message);
+    }
+};
+
+// 6. LIRE LE PROFIL PUBLIC D'UN AUTRE MEMBRE (ACCESSIBLE À TOUS)
+exports.getPublicProfile = async (req, res) => {
+    try {
+        if (!req.session || !req.session.userId) {
+            return res.status(401).send("Non connecté");
+        }
+
+        const { id } = req.params;
+        
+        const query = 'SELECT id, fullname, bio, phone, address, avatar_url FROM users WHERE id = ?';
+        const [rows] = await db.execute(query, [id]);
+
+        if (!rows || rows.length === 0) {
+            return res.status(404).send("Membre introuvable");
+        }
+
+        res.json(rows[0]);
+    } catch (error) {
+        console.error("Erreur profil public :", error);
+        res.status(500).send("Erreur serveur : " + error.message);
     }
 };

@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EntreNous - Mon Profil</title>
+    <style>
+        /* CONFIGURATION GLOBALE */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f8fafc;
+            margin: 0;
+            padding-top: 65px;
+            color: #0f172a;
+        }
+
+        /* BARRE SUPÉRIEURE (NAVBAR) */
+        .navbar {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            height: 60px;
+            background-color: #ffffff;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 40px;
+            box-sizing: border-box;
+            z-index: 1000;
+        }
+
+        .navbar h1 {
+            font-size: 24px;
+            margin: 0;
+            font-weight: 800;
+            color: #0f172a;
+            letter-spacing: -0.5px;
+        }
+
+        /* CONFIGURATION DE LA LAYOUT (SIDEBAR GAUCHE + PROFIL DROITE) */
+        .main-layout {
+            display: flex;
+            max-width: 1200px;
+            margin: 0 auto;
+            gap: 30px;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        /* COLONNE GAUCHE : NAVIGATION FIXED */
+        .left-column {
+            flex: 0 0 260px;
+            position: sticky;
+            top: 85px;
+            height: fit-content;
+        }
+
+        .sidebar-card {
+            background-color: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 15px 0;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+
+        .sidebar-card a {
+            display: flex;
+            align-items: center;
+            padding: 12px 25px;
+            color: #334155;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 15px;
+            transition: all 0.2s ease;
+        }
+
+        .sidebar-card a:hover {
+            background-color: #f8fafc;
+            color: #0095f6;
+            padding-left: 30px;
+        }
+
+        .sidebar-card a.admin-btn-active {
+            color: #ffffff !important;
+            background-color: #dc2626;
+            margin: 10px 15px;
+            border-radius: 8px;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(220, 38, 38, 0.25);
+        }
+
+        /* COLONNE DROITE : CONTENU DU PROFIL COMPLET */
+        .profile-content-area {
+            flex: 1;
+            max-width: 880px;
+        }
+
+        /* EN-TÊTE DU PROFIL (AVATAR + BIO) */
+        .profile-header-card {
+            background-color: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            padding: 30px;
+            display: flex;
+            align-items: center;
+            gap: 40px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            margin-bottom: 25px;
+        }
+
+        /* BLOC COMPOSITE AVATAR INTERACTIF */
+        .avatar-container {
+            position: relative;
+            width: 130px;
+            height: 130px;
+            cursor: pointer;
+        }
+
+        .profile-avatar {
+            width: 130px;
+            height: 130px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid #0095f6;
+            background-color: #f1f5f9;
+        }
+
+        .avatar-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 130px;
+            height: 130px;
+            border-radius: 50%;
+            background-color: rgba(15, 23, 42, 0.6);
+            color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: 600;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+
+        .avatar-container:hover .avatar-overlay {
+            opacity: 1;
+        }
+
+        /* INFO TEXTE DE L'EN-TÊTE */
+        .profile-info-block {
+            flex: 1;
+        }
+
+        .username-row {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 15px;
+        }
+
+        .username-row h2 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .edit-profile-btn {
+            background-color: #f1f5f9;
+            color: #1e293b;
+            border: 1px solid #cbd5e1;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .edit-profile-btn:hover {
+            background-color: #e2e8f0;
+        }
+
+        .bio-text {
+            font-size: 15px;
+            color: #475569;
+            line-height: 1.5;
+            margin: 0 0 15px 0;
+        }
+
+        .meta-details {
+            display: flex;
+            gap: 25px;
+            font-size: 14px;
+            color: #64748b;
+            font-weight: 500;
+        }
+
+        /* ZONE DES SÉPARATIONS / ONGLETS */
+        .tabs-separator {
+            border-top: 1px solid #e2e8f0;
+            margin-bottom: 25px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .tab-item {
+            padding: 15px 20px;
+            border-top: 2px solid #0f172a;
+            font-size: 13px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #0f172a;
+            cursor: pointer;
+        }
+
+        /* GRILLE DES PUBLICATIONS PERSONNELLES */
+        .user-posts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 20px;
+        }
+
+        .grid-post-card {
+            background-color: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02);
+            transition: transform 0.2s;
+        }
+
+        .grid-post-card:hover {
+            transform: translateY(-3px);
+        }
+
+        .grid-post-body {
+            padding: 15px;
+        }
+
+        .grid-post-body p {
+            margin: 0;
+            font-size: 14px;
+            color: #334155;
+            line-height: 1.4;
+        }
+
+        .grid-post-time {
+            font-size: 11px;
+            color: #94a3b8;
+            margin-top: 10px;
+            display: block;
+            font-weight: 600;
+        }
+
+        /* MODALE FORMULAIRE DE MODIFICATION INFO */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(15, 23, 42, 0.6);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background-color: #ffffff;
+            border-radius: 16px;
+            width: 100%;
+            max-width: 440px;
+            padding: 30px;
+            box-sizing: border-box;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        }
+
+        .modal-content h3 {
+            margin: 0 0 20px 0;
+            font-size: 20px;
+            color: #0f172a;
+        }
+
+        .modal-form-group {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 16px;
+        }
+
+        .modal-form-group label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #475569;
+            margin-bottom: 6px;
+        }
+
+        .modal-form-group input, .modal-form-group textarea {
+            padding: 10px 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 14px;
+            background-color: #f8fafc;
+        }
+
+        .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            margin-top: 25px;
+        }
+
+        .btn-cancel {
+            background-color: #f1f5f9;
+            border: 1px solid #cbd5e1;
+            padding: 10px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .btn-save {
+            background-color: #0095f6;
+            color: #ffffff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        /* RESPONSIVE FILTER */
+        @media (max-width: 800px) {
+            .left-column { display: none; }
+            .profile-header-card { flex-direction: column; text-align: center; }
+            .meta-details { justify-content: center; }
+            .username-row { justify-content: center; flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Barre supérieure unifiée -->
+    <nav class="navbar">
+        <h1>EntreNous</h1>
+    </nav>
+
+    <!-- Structure principale de la page -->
+    <main class="main-layout">
+
+        <!-- ================= COLONNE GAUCHE : NAVIGATION FICTIONNELLE ================= -->
+        <aside class="left-column">
+            <div class="sidebar-card">
+                <a href="/home.html">🏠 Accueil</a>
+                <a href="/messages.html">💬 Messages Privés</a>
+                <a href="/notifications.html">🔔 Notifications</a>
+                <a href="/profile.html" style="color: #0095f6;">👤 Mon Profil</a>
+                
+                <!-- Lien Admin réservé à Pape (ID 12) -->
+                <a href="/admin/dashboard.html" id="adminLink" class="admin-btn-active" style="display: none;">🛠️ Espace Admin</a>
+                
+                <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 15px 0;">
+                <a href="/" style="color: #ef4444;">🚪 Déconnexion</a>
+            </div>
+        </aside>
+
+        <!-- ================= COLONNE DROITE : BLOC PROFIL COMPLET ================= -->
+        <section class="profile-content-area">
+            
+            <!-- Carte principale d'en-tête du profil -->
+            <div class="profile-header-card">
+                <!-- Zone d'avatar composite avec gestionnaire de clic masqué -->
+                <div class="avatar-container" onclick="document.getElementById('avatarUploadInput').click()">
+                    <img src="https://flaticon.com" alt="Avatar" class="profile-avatar" id="profileAvatarImg">
+                    <div class="avatar-overlay">
+                        <span>📷</span>
+                        <span style="margin-top: 5px;">Changer la photo</span>
+                    </div>
+                    <input type="file" id="avatarUploadInput" accept="image/*" style="display: none;">
+                </div>
+
+                <!-- Informations textuelles de l'utilisateur de la session -->
+                <div class="profile-info-block">
+                    <div class="username-row">
+                        <h2 id="profileFullname">Chargement...</h2>
+                        <button class="edit-profile-btn" onclick="openProfileModal()">Modifier le profil</button>
+                    </div>
+                    <p class="bio-text" id="profileBio">Aucune biographie rédigée pour le moment. Cliquez sur modifier pour vous présenter à la communauté !</p>
+                    <div class="meta-details">
+                        <span id="profilePhone">📞 Non renseigné</span>
+                        <span id="profileAddress">📍 Non renseigné</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Onglet de séparation de section -->
+            <div class="tabs-separator">
+                <div class="tab-item">📋 Mes Publications</div>
+            </div>
+
+            <!-- Grille d'affichage des publications personnelles -->
+            <div class="user-posts-grid" id="userPostsGrid">
+                <div class="grid-post-card" style="grid-column: 1 / -1; text-align: center; padding: 40px; background: white; border-radius: 12px; border: 1px solid #e2e8f0;">
+                    <p style="color: #64748b;">Aucune publication partagée pour l'instant.</p>
+                </div>
+            </div>
+
+        </section>
+    </main>
+
+    <!-- BOÎTE MODALE DE MODIFICATION DU PROFIL -->
+    <div class="modal" id="profileModal">
+        <div class="modal-content">
+            <h3>Modifier mes informations</h3>
+            <form id="editProfileForm">
+                <div class="modal-form-group">
+                    <label for="editBio">BIOGRAPHIE / DESCRIPTION</label>
+                    <textarea id="editBio" rows="3" placeholder="Parlez-nous de vous..."></textarea>
+                </div>
+                <div class="modal-form-group">
+                    <label for="editPhone">NUMÉRO DE TÉLÉPHONE</label>
+                    <input type="text" id="editPhone" placeholder="Ex: +221 77...">
+                </div>
+                <div class="modal-form-group">
+                    <label for="editAddress">VILLE DE RÉSIDENCE</label>
+                    <input type="text" id="editAddress" placeholder="Ex: Dakar, Thiès...">
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn-cancel" onclick="closeProfileModal()">Annuler</button>
+                    <button type="submit" class="btn-save">Enregistrer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <!-- ================= INTÉLLIGENCE JAVASCRIPT DU PROFIL ================= -->
+        <!-- ================= INTÉLLIGENCE JAVASCRIPT DU PROFIL CORRIGÉE ================= -->
+        <script>
+        // 1. Gestion d'ouverture et de fermeture de la modale info
+        function openProfileModal() {
+            document.getElementById('editProfileForm').reset();
+            
+            // Pré-remplir la modale avec les vraies valeurs affichées à l'écran
+            const currentBio = document.getElementById('profileBio').innerText;
+            const currentPhone = document.getElementById('profilePhone').innerText.replace("📞 ", "");
+            const currentAddress = document.getElementById('profileAddress').innerText.replace("📍 ", "");
+            
+            document.getElementById('editBio').value = currentBio.includes("Aucune biographie") ? "" : currentBio;
+            document.getElementById('editPhone').value = currentPhone.includes("Non renseigné") ? "" : currentPhone;
+            document.getElementById('editAddress').value = currentAddress.includes("Non renseigné") ? "" : currentAddress;
+            
+            document.getElementById('profileModal').style.display = 'flex';
+        }
+
+        function closeProfileModal() {
+            document.getElementById('profileModal').style.display = 'none';
+        }
+
+        // Fermer la modale si l'utilisateur clique en dehors de la boîte blanche
+        document.getElementById('profileModal').addEventListener('click', (e) => {
+            if (e.target === document.getElementById('profileModal')) closeProfileModal();
+        });
+
+        // 2. Chargement initial des données depuis MySQL (Mon Profil OU Profil ciblé)
+        async function fetchUserProfileData() {
+            try {
+                // 🔍 Analyse de l'URL pour détecter un paramètre d'identification (ex: ?id=15)
+                const urlParams = new URLSearchParams(window.location.search);
+                const targetUserId = urlParams.get('id');
+
+                let response;
+                let isMyOwnProfile = false;
+
+                // Si aucun ID n'est fourni dans l'adresse, on charge notre propre profil
+                if (!targetUserId) {
+                    response = await fetch('/auth/me');
+                    isMyOwnProfile = true;
+                } else {
+                    // Sinon, on interroge l'API d'administration existante pour lire cet utilisateur
+                    response = await fetch(`/auth/public-users/${targetUserId}`);
+
+                }
+
+                if (response.ok) {
+                    let data = await response.json();
+                    
+                    // Alignement strict : si la réponse BDD est enveloppée dans un tableau, on extrait la première ligne
+                    if (Array.isArray(data)) {
+                        data = data[0];
+                    }
+
+                    if (!data) {
+                        window.location.href = "/home.html";
+                        return;
+                    }
+
+                    // Remplissage dynamique des éléments de l'interface
+                    document.getElementById('profileFullname').innerText = data.fullname || "Utilisateur";
+                    document.getElementById('profileBio').innerText = data.bio || "Aucune biographie rédigée pour le moment.";
+                    document.getElementById('profilePhone').innerText = data.phone ? "📞 " + data.phone : "📞 Non renseigné";
+                    document.getElementById('profileAddress').innerText = data.address ? "📍 " + data.address : "📍 Non renseigné";
+                    
+                    if (data.avatar_url) {
+                        document.getElementById('profileAvatarImg').src = data.avatar_url;
+                    } else {
+                        document.getElementById('profileAvatarImg').src = "https://flaticon.com";
+                    }
+
+                    // 🎛️ ADAPTATION DES DROITS D'ÉDITION SUR L'INTERFACE
+                    const editBtn = document.querySelector('.edit-profile-btn');
+                    const avatarContainer = document.querySelector('.avatar-container');
+                    const overlay = document.querySelector('.avatar-overlay');
+
+                    if (isMyOwnProfile) {
+                        // Autorisations activées pour son propre compte
+                        if (editBtn) editBtn.style.display = 'block';
+                        avatarContainer.setAttribute('onclick', "document.getElementById('avatarUploadInput').click()");
+                        avatarContainer.style.cursor = 'pointer';
+                        if (overlay) overlay.style.display = 'flex';
+                    } else {
+                        // Protections activées lors de la visite d'un profil tiers
+                        if (editBtn) editBtn.style.display = 'none';
+                        avatarContainer.removeAttribute('onclick');
+                        avatarContainer.style.cursor = 'default';
+                        if (overlay) overlay.style.display = 'none';
+                    }
+
+                    // SÉCURITÉ PERSISTANTE : Vérification parallèle pour maintenir l'Espace Admin de Pape actif
+                    const sessionCheck = await fetch('/auth/me');
+                    if (sessionCheck.ok) {
+                        let sessionData = await sessionCheck.json();
+                        if (Array.isArray(sessionData)) sessionData = sessionData[0];
+                        
+                        if (sessionData && sessionData.id && Number(sessionData.id) === 12 && sessionData.role === 'admin') {
+                            document.getElementById('adminLink').style.display = 'flex';
+                        }
+                    }
+                } else {
+                    window.location.href = "/home.html";
+                }
+            } catch (err) {
+                console.error("Erreur globale de lecture du profil :", err);
+            }
+        }
+
+        // 3. CAPTURE ET ENVOI DE LA PHOTO DE PROFIL EN BASE64 AU BACKEND
+        document.getElementById('avatarUploadInput').addEventListener('change', async (e) => {
+            const files = e.target.files;
+            if (!files || files.length === 0) return;
+            const file = files[0];
+
+            const reader = new FileReader();
+            reader.onloadend = async () => {
+                const base64Image = reader.result;
+                try {
+                    const response = await fetch('/auth/update-avatar', {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ avatar_url: base64Image })
+                    });
+
+                    if (response.ok) {
+                        document.getElementById('profileAvatarImg').src = base64Image;
+                        alert("Photo de profil mise à jour avec succès !");
+                    } else {
+                        alert("Erreur lors de la sauvegarde de la photo.");
+                    }
+                } catch (err) {
+                    console.error("Erreur d'envoi de l'avatar :", err);
+                    alert("Impossible de joindre le serveur.");
+                }
+            };
+            reader.readAsDataURL(file);
+        });
+
+        // 4. SOUCOUPAGE ET SAUVEGARDE DES INFORMATIONS TEXTUELLES (BIO, PHONE, VILLE)
+        document.getElementById('editProfileForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const bio = document.getElementById('editBio').value;
+            const phone = document.getElementById('editPhone').value;
+            const address = document.getElementById('editAddress').value;
+
+            try {
+                const response = await fetch('/auth/update-profile', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ bio, phone, address })
+                });
+
+                if (response.ok) {
+                    alert("Profil mis à jour avec succès !");
+                    closeProfileModal();
+                    fetchUserProfileData(); // Rafraîchit les données lues depuis MySQL
+                } else {
+                    alert("Erreur lors de la mise à jour des informations.");
+                }
+            } catch (err) {
+                console.error("Erreur lors de la mise à jour du profil :", err);
+                alert("Impossible de joindre le serveur.");
+            }
+        });
+
+        // Déclenchement automatique de la récupération au chargement de la page
+        window.addEventListener('DOMContentLoaded', fetchUserProfileData);
+    </script>
+
+
+</body>
+</html>
