@@ -337,6 +337,89 @@
             .meta-details { justify-content: center; }
             .username-row { justify-content: center; flex-direction: column; }
         }
+
+                /* ==================== BOX DE DISCUSSION PRIVÉE ==================== */
+        .chat-window {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 320px;
+            height: 400px;
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px 16px 0 0;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+            display: none;
+            flex-direction: column;
+            z-index: 3000;
+            overflow: hidden;
+            font-family: inherit;
+        }
+        .chat-header {
+            background: #0f172a;
+            color: #ffffff;
+            padding: 12px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        .chat-messages {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            background: #f8fafc;
+        }
+        .chat-bubble {
+            max-width: 75%;
+            padding: 8px 12px;
+            border-radius: 12px;
+            font-size: 13.5px;
+            line-height: 1.4;
+            word-wrap: break-word;
+        }
+        .chat-bubble.sent {
+            background: #0095f6;
+            color: #ffffff;
+            align-self: flex-end;
+            border-bottom-right-radius: 2px;
+        }
+        .chat-bubble.received {
+            background: #e2e8f0;
+            color: #0f172a;
+            align-self: flex-start;
+            border-bottom-left-radius: 2px;
+        }
+        .chat-footer {
+            padding: 10px;
+            display: flex;
+            gap: 8px;
+            border-top: 1px solid #e2e8f0;
+            background: #ffffff;
+        }
+        .chat-footer input {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid #e2e8f0;
+            border-radius: 20px;
+            font-size: 13px;
+            outline: none;
+        }
+        .chat-footer button {
+            background: #0095f6;
+            color: white;
+            border: none;
+            padding: 0 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
     </style>
 </head>
 <body>
@@ -435,12 +518,12 @@
     </div>
     <!-- ================= INTÉLLIGENCE JAVASCRIPT DU PROFIL ================= -->
         <!-- ================= INTÉLLIGENCE JAVASCRIPT DU PROFIL CORRIGÉE ================= -->
-        <script>
+    <!-- ================= INTÉLLIGENCE SECURE DE LA FICHE PROFIL (BLOC A) ================= -->
+    <script>
         // 1. Gestion d'ouverture et de fermeture de la modale info
         function openProfileModal() {
             document.getElementById('editProfileForm').reset();
             
-            // Pré-remplir la modale avec les vraies valeurs affichées à l'écran
             const currentBio = document.getElementById('profileBio').innerText;
             const currentPhone = document.getElementById('profilePhone').innerText.replace("📞 ", "");
             const currentAddress = document.getElementById('profileAddress').innerText.replace("📍 ", "");
@@ -456,7 +539,6 @@
             document.getElementById('profileModal').style.display = 'none';
         }
 
-        // Fermer la modale si l'utilisateur clique en dehors de la boîte blanche
         document.getElementById('profileModal').addEventListener('click', (e) => {
             if (e.target === document.getElementById('profileModal')) closeProfileModal();
         });
@@ -464,27 +546,22 @@
         // 2. Chargement initial des données depuis MySQL (Mon Profil OU Profil ciblé)
         async function fetchUserProfileData() {
             try {
-                // 🔍 Analyse de l'URL pour détecter un paramètre d'identification (ex: ?id=15)
                 const urlParams = new URLSearchParams(window.location.search);
                 const targetUserId = urlParams.get('id');
 
                 let response;
                 let isMyOwnProfile = false;
 
-                // Si aucun ID n'est fourni dans l'adresse, on charge notre propre profil
                 if (!targetUserId) {
                     response = await fetch('/auth/me');
                     isMyOwnProfile = true;
                 } else {
-                    // Sinon, on interroge l'API d'administration existante pour lire cet utilisateur
                     response = await fetch(`/auth/public-users/${targetUserId}`);
-
                 }
 
                 if (response.ok) {
                     let data = await response.json();
                     
-                    // Alignement strict : si la réponse BDD est enveloppée dans un tableau, on extrait la première ligne
                     if (Array.isArray(data)) {
                         data = data[0];
                     }
@@ -494,7 +571,6 @@
                         return;
                     }
 
-                    // Remplissage dynamique des éléments de l'interface
                     document.getElementById('profileFullname').innerText = data.fullname || "Utilisateur";
                     document.getElementById('profileBio').innerText = data.bio || "Aucune biographie rédigée pour le moment.";
                     document.getElementById('profilePhone').innerText = data.phone ? "📞 " + data.phone : "📞 Non renseigné";
@@ -506,26 +582,39 @@
                         document.getElementById('profileAvatarImg').src = "https://flaticon.com";
                     }
 
-                    // 🎛️ ADAPTATION DES DROITS D'ÉDITION SUR L'INTERFACE
+                    // 🎛️ INTEGRATION ADAPTATIVE DU BOUTON DE MESSAGERIE PRIVÉE (EFFET WAOUH)
                     const editBtn = document.querySelector('.edit-profile-btn');
                     const avatarContainer = document.querySelector('.avatar-container');
                     const overlay = document.querySelector('.avatar-overlay');
 
+                    let messageBtn = document.getElementById('privateMessageBtn');
+                    if (!messageBtn && editBtn) {
+                        messageBtn = document.createElement('button');
+                        messageBtn.id = 'privateMessageBtn';
+                        messageBtn.className = 'edit-profile-btn';
+                        messageBtn.style.backgroundColor = '#10b981'; // Vert messagerie moderne
+                        messageBtn.style.marginTop = '10px';
+                        editBtn.parentNode.appendChild(messageBtn);
+                    }
+
                     if (isMyOwnProfile) {
-                        // Autorisations activées pour son propre compte
                         if (editBtn) editBtn.style.display = 'block';
+                        if (messageBtn) messageBtn.style.display = 'none';
                         avatarContainer.setAttribute('onclick', "document.getElementById('avatarUploadInput').click()");
                         avatarContainer.style.cursor = 'pointer';
                         if (overlay) overlay.style.display = 'flex';
                     } else {
-                        // Protections activées lors de la visite d'un profil tiers
                         if (editBtn) editBtn.style.display = 'none';
+                        if (messageBtn) {
+                            messageBtn.style.display = 'block';
+                            messageBtn.innerText = `💬 Écrire à ${data.fullname.split(' ')[0]}`;
+                            messageBtn.setAttribute('onclick', `openChatWindow(${data.id}, "${data.fullname}")`);
+                        }
                         avatarContainer.removeAttribute('onclick');
                         avatarContainer.style.cursor = 'default';
                         if (overlay) overlay.style.display = 'none';
                     }
 
-                    // SÉCURITÉ PERSISTANTE : Vérification parallèle pour maintenir l'Espace Admin de Pape actif
                     const sessionCheck = await fetch('/auth/me');
                     if (sessionCheck.ok) {
                         let sessionData = await sessionCheck.json();
@@ -567,13 +656,12 @@
                     }
                 } catch (err) {
                     console.error("Erreur d'envoi de l'avatar :", err);
-                    alert("Impossible de joindre le serveur.");
                 }
             };
             reader.readAsDataURL(file);
         });
 
-        // 4. SOUCOUPAGE ET SAUVEGARDE DES INFORMATIONS TEXTUELLES (BIO, PHONE, VILLE)
+        // 4. SOUCOUPAGE ET SAUVEGARDE DES INFORMATIONS TEXTUELLES
         document.getElementById('editProfileForm').addEventListener('submit', async (e) => {
             e.preventDefault();
 
@@ -591,23 +679,22 @@
                 if (response.ok) {
                     alert("Profil mis à jour avec succès !");
                     closeProfileModal();
-                    fetchUserProfileData(); // Rafraîchit les données lues depuis MySQL
+                    fetchUserProfileData();
                 } else {
                     alert("Erreur lors de la mise à jour des informations.");
                 }
             } catch (err) {
                 console.error("Erreur lors de la mise à jour du profil :", err);
-                alert("Impossible de joindre le serveur.");
             }
         });
-
-                       // 5. CHARGEMENT DYNAMIQUE DES PUBLICATIONS DE MYSQL (SÉCURISÉ ET FILTRÉ)
+        // =================================================================
+        // 5. CHARGEMENT DYNAMIQUE DES PUBLICATIONS DU PROFIL (FILTRÉ BY ID)
+        // =================================================================
         async function loadMyPosts() {
             try {
                 const urlParams = new URLSearchParams(window.location.search);
                 let userId = urlParams.get('id');
 
-                // Si aucun ID n'est dans l'URL, on récupère notre propre ID via /auth/me
                 if (!userId) {
                     const sessionCheck = await fetch('/auth/me');
                     if (sessionCheck.ok) {
@@ -618,7 +705,6 @@
 
                 if (!userId) return;
 
-                // 🔥 CORRECTION DE L'URL : On appelle l'API publique filtrée par ID
                 const response = await fetch(`/posts/user/${userId}`);
                 const gridContainer = document.getElementById('userPostsGrid');
 
@@ -633,7 +719,6 @@
                         return;
                     }
 
-                    // Injection propre dans votre grille CSS de profile.html
                     gridContainer.innerHTML = myPosts.map(post => {
                         const postDate = new Date(post.created_at).toLocaleDateString('fr-FR', {
                             day: 'numeric', month: 'short'
@@ -642,7 +727,7 @@
                         return `
                             <div class="grid-post-card">
                                 ${post.image_url ? `
-                                    <img src="${post.image_url}" alt="Photo publication" class="grid-post-img">
+                                    <img src="${post.image_url}" alt="Photo" class="grid-post-img">
                                 ` : `
                                     <div style="width: 100%; height: 200px; background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 24px;">📝</div>
                                 `}
@@ -655,20 +740,109 @@
                     }).join('');
                 }
             } catch (err) {
-                console.error("Erreur lors du chargement des publications du profil :", err);
+                console.error("Erreur chargement posts profil :", err);
             }
         }
 
-        // Lancement séquentiel ordonné au chargement complet du profil
+        // =================================================================
+        // 6. INTELLIGENCE DU CHAT PRIVÉ (TEMPS RÉEL AVEC REFRESH DE 2S)
+        // =================================================================
+        let currentChatTargetId = null;
+        let chatInterval = null;
+
+        async function openChatWindow(targetUserId, targetFullname) {
+            currentChatTargetId = targetUserId;
+            document.getElementById('chatTargetName').innerText = `💬 Discussion avec ${targetFullname.split(' ')[0]}`;
+            document.getElementById('privateChatWindow').style.display = 'flex';
+            
+            await loadChatHistory();
+
+            if (chatInterval) clearInterval(chatInterval);
+            chatInterval = setInterval(loadChatHistory, 2000); // Polling toutes les 2s
+        }
+
+        function closeChatWindow() {
+            document.getElementById('privateChatWindow').style.display = 'none';
+            if (chatInterval) {
+                clearInterval(chatInterval);
+                chatInterval = null;
+            }
+        }
+
+        async function loadChatHistory() {
+            if (!currentChatTargetId) return;
+            const container = document.getElementById('chatMessagesContainer');
+
+            try {
+                const response = await fetch(`/messages/history/${currentChatTargetId}`);
+                if (response.ok) {
+                    const messages = await response.json();
+                    const isAtBottom = container.scrollHeight - container.scrollTop <= container.clientHeight + 40;
+
+                    container.innerHTML = messages.map(msg => {
+                        const isSentByMe = Number(msg.sender_id) !== Number(currentChatTargetId);
+                        const bubbleClass = isSentByMe ? 'sent' : 'received';
+                        return `<div class="chat-bubble ${bubbleClass}">${msg.message}</div>`;
+                    }).join('');
+
+                    if (isAtBottom) {
+                        container.scrollTop = container.scrollHeight;
+                    }
+                }
+            } catch (err) {
+                console.error("Erreur historique chat :", err);
+            }
+        }
+
+        async function sendPrivateMessage() {
+            const input = document.getElementById('chatMessageInput');
+            const message = input.value.trim();
+
+            if (!message || !currentChatTargetId) return;
+
+            try {
+                const response = await fetch('/messages/send', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        receiverId: currentChatTargetId,
+                        message: message
+                    })
+                });
+
+                if (response.ok) {
+                    input.value = '';
+                    await loadChatHistory();
+                }
+            } catch (err) {
+                console.error("Erreur envoi message :", err);
+            }
+        }
+
+        // =================================================================
+        // DÉCLENCHEMENT INITIAL SYNCHRONISÉ ET SÉQUENTIEL
+        // =================================================================
         window.addEventListener('DOMContentLoaded', async () => {
             await fetchUserProfileData();
             await loadMyPosts();
         });
-
-        // Déclenchement automatique de la récupération au chargement de la page
-        window.addEventListener('DOMContentLoaded', fetchUserProfileData);
     </script>
+</body>
+</html>
 
+
+        <!-- BOÎTE DE CHAT PRIVÉ INSTANTANÉ -->
+    <div id="privateChatWindow" class="chat-window">
+        <div class="chat-header">
+            <span id="chatTargetName">💬 Discussion privée</span>
+            <button onclick="closeChatWindow()" style="background:none; border:none; color:white; font-weight:bold; cursor:pointer; font-size:16px;">×</button>
+        </div>
+        <div id="chatMessagesContainer" class="chat-messages"></div>
+        <div class="chat-footer">
+            <input type="text" id="chatMessageInput" placeholder="Écrire un message secret..." onkeypress="if(event.key === 'Enter') sendPrivateMessage()">
+            <button onclick="sendPrivateMessage()">Envoyer</button>
+        </div>
+    </div>
 
 </body>
 </html>

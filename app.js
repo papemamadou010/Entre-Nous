@@ -6,6 +6,8 @@ require('dotenv').config();
 
 // Importer la connexion BDD et les routes
 const db = require('./config/db');
+const messageRoutes = require('./routes/messageRoutes');
+
 
 
 // 🛠️ SCRIPT AUTOMATIQUE DE MISE À NIVEAU DE LA BASE DE DONNÉES (AVATAR + BIO + POSTS + LIKES)
@@ -72,6 +74,48 @@ const authRoutes = require('./routes/authRoutes');
 const postRoutes = require('./routes/postRoutes');
 const adminRoutes = require('./routes/adminRoutes'); // 1. IMPORTATION DES ROUTES ADMIN
 
+// 🛠️ SCRIPT AUTOMATIQUE DE MISE À NIVEAU DE LA BASE DE DONNÉES (TOTAL COMPLET)
+db.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar_url LONGTEXT NULL")
+  .then(() => db.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS bio TEXT NULL"))
+  .then(() => db.execute("ALTER TABLE users MODIFY COLUMN avatar_url LONGTEXT NULL"))
+  .then(() => db.execute("ALTER TABLE posts ADD COLUMN IF NOT EXISTS image_url LONGTEXT NULL"))
+  .then(() => db.execute(`
+    CREATE TABLE IF NOT EXISTS likes (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        user_id INT NOT NULL,
+        post_id INT NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE KEY unique_user_post (user_id, post_id),
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+        FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE
+    )
+  `))
+  .then(() => db.execute(`
+    CREATE TABLE IF NOT EXISTS comments (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        content TEXT NOT NULL,
+        user_id INT NOT NULL,
+        post_id INT NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+        FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE
+    )
+  `))
+  .then(() => db.execute(`
+    CREATE TABLE IF NOT EXISTS private_messages (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        sender_id INT NOT NULL,
+        receiver_id INT NOT NULL,
+        message TEXT NOT NULL,
+        is_read TINYINT(1) DEFAULT 0,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (sender_id) REFERENCES users(id) ON DELETE CASCADE,
+        FOREIGN KEY (receiver_id) REFERENCES users(id) ON DELETE CASCADE
+    )
+  `)) // <-- CRÉE LA TABLE DES MESSAGES PRIVÉS
+  .then(() => console.log("🚀 BASE DE DONNÉES PRÊTE : Tous les modules et 'private_messages' sont activés !"))
+  .catch(err => console.error("❌ Erreur de mise à niveau BDD :", err.message));
+
 // Autoriser le passage des très longues chaînes de caractères (Base64)
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
@@ -93,6 +137,8 @@ app.use(express.static('views'));
 app.use('/auth', authRoutes);
 app.use('/posts', postRoutes);
 app.use('/admin-api', adminRoutes); // 2. ACTIVATION DU MODULE SECRÈT ADMIN
+app.use('/messages', messageRoutes);
+
 
 // Route d'accueil principale corrigée (affiche index.html dès l'entrée sur le site)
 app.get('/', (req, res) => {
