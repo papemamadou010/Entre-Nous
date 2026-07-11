@@ -134,6 +134,7 @@ exports.updateProfileInfos = async (req, res) => {
     }
 };
 
+// ================= RECULLER L'ÉTAPE 2 ICI PROPREMENT =================
 // 6. LIRE LE PROFIL PUBLIC D'UN AUTRE MEMBRE (ACCESSIBLE À TOUS)
 exports.getPublicProfile = async (req, res) => {
     try {
@@ -143,6 +144,7 @@ exports.getPublicProfile = async (req, res) => {
 
         const { id } = req.params;
         
+        // Sélection des informations publiques uniquement
         const query = 'SELECT id, fullname, bio, phone, address, avatar_url FROM users WHERE id = ?';
         const [rows] = await db.execute(query, [id]);
 
@@ -150,9 +152,11 @@ exports.getPublicProfile = async (req, res) => {
             return res.status(404).send("Membre introuvable");
         }
 
+        // On renvoie la première ligne trouvée au format JSON
         res.json(rows[0]);
     } catch (error) {
         console.error("Erreur profil public :", error);
         res.status(500).send("Erreur serveur : " + error.message);
     }
 };
+

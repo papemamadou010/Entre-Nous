@@ -16,19 +16,22 @@ db.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar_url LONGTEXT NULL"
   .catch(err => console.error("❌ Erreur de mise à niveau BDD :", err.message));
 
 // 🛠️ SCRIPT AUTOMATIQUE DE MISE À NIVEAU DE LA BASE DE DONNÉES
-// Crée et configure la colonne avatar_url au format maximal LONGTEXT pour les images Base64
+// Configuration des colonnes pour l'avatar, la bio et l'image des publications
 db.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar_url LONGTEXT NULL")
+  .then(() => db.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS bio TEXT NULL"))
   .then(() => db.execute("ALTER TABLE users MODIFY COLUMN avatar_url LONGTEXT NULL"))
-  .then(() => console.log("🚀 BASE DE DONNÉES ENTRAÎNÉE : Colonne 'avatar_url' activée en LONGTEXT !"))
+  .then(() => db.execute("ALTER TABLE posts ADD COLUMN IF NOT EXISTS image_url LONGTEXT NULL")) // ACTIVE LA COLONNE DANS POSTS
+  .then(() => console.log("🚀 BASE DE DONNÉES PRÊTE : Tous les modules et 'image_url' sont activés !"))
   .catch(err => console.error("❌ Erreur de mise à niveau BDD :", err.message));
 
 const authRoutes = require('./routes/authRoutes');
 const postRoutes = require('./routes/postRoutes');
 const adminRoutes = require('./routes/adminRoutes'); // 1. IMPORTATION DES ROUTES ADMIN
 
-// Middlewares obligatoires
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+// Autoriser le passage des très longues chaînes de caractères (Base64)
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
+
 
 // Configuration des Sessions Utilisateurs
 app.use(session({

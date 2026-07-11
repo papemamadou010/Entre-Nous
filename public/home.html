@@ -294,7 +294,8 @@
             <!-- Formulaire de Publication Moderne -->
             <div class="create-post-box">
                 <form id="postForm">
-                    <textarea id="postContent" placeholder="Que voulez-vous partager aujourd'hui, Pape ?" required></textarea>
+                    <textarea id="postContent" placeholder="Que voulez-vous partager aujourd'hui, Pape ?"></textarea>
+
                     
                     <div class="form-actions">
                         <!-- Bouton d'ajout d'image épuré -->
@@ -353,21 +354,33 @@
     <!-- SCRIPTS JAVASCRIPT REPRIS ET ALIGNÉS À 100% -->
      <!-- SCRIPTS JAVASCRIPT REPRIS, SYNCHRONISÉS ET SÉCURISÉS -->
         <!-- SCRIPTS JAVASCRIPT REPRIS, SYNCHRONISÉS ET SÉCURISÉS -->
+     <!-- ================= SCRIPT DE GESTION DU FLUX DYNAMIQUE (HOME.HTML) ================= -->
+        <!-- ================= INTÉLLIGENCE SÉCURISÉE DU FIL D'ACTUALITÉ ================= -->
     <script>
-        // 1. Script d'envoi de publication (Base64 JSON d'origine)
+        // 1. SCRIPT D'ENVOI DE PUBLICATION AVEC CAPTURE STRICTE DE L'IMAGE [0]
         document.getElementById('postForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
             const content = document.getElementById('postContent').value;
-            const imageFile = document.getElementById('postImage').files[0];
+            const imageInput = document.getElementById('postImage');
+            
+            // CORRECTION INDEX [0] : Extraction physique du fichier sélectionné
+            const imageFile = (imageInput.files && imageInput.files.length > 0) ? imageInput.files[0] : null;
             let imageUrl = null;
 
             if (imageFile) {
-                const reader = new FileReader();
-                imageUrl = await new Promise((resolve) => {
-                    reader.onloadend = () => resolve(reader.result);
-                    reader.readAsDataURL(imageFile);
-                });
+                try {
+                    imageUrl = await new Promise((resolve, reject) => {
+                        const reader = new FileReader();
+                        reader.onloadend = () => resolve(reader.result);
+                        reader.onerror = (err) => reject(err);
+                        reader.readAsDataURL(imageFile); // Déclenche la conversion en Base64
+                    });
+                } catch (readError) {
+                    console.error("Erreur de conversion de l'image :", readError);
+                    alert("Impossible de traiter cette image.");
+                    return;
+                }
             }
 
             try {
@@ -381,37 +394,39 @@
                     alert("Publication envoyée avec succès !");
                     window.location.reload();
                 } else {
-                    alert("Erreur lors de la publication");
+                    const errorText = await response.text();
+                    alert("Erreur serveur : " + errorText);
                 }
             } catch (error) {
-                console.error("Erreur d'envoi de post :", error);
+                console.error("Erreur réseau envoi post :", error);
+                alert("Impossible de joindre le serveur.");
             }
         });
 
-        // 2. SÉCURITÉ ACCÈS : Seul Pape (ID 12) voit le bouton Espace Admin
+        // 2. SÉCURITÉ ACCÈS : Vérification du rôle et affichage de l'Espace Admin
         async function checkUserRole() {
             try {
                 const response = await fetch('/auth/me');
                 if (response.ok) {
-                    const data = await response.json();
+                    let data = await response.json();
+                    if (Array.isArray(data)) data = data[0]; // Extrait l'objet si retourné en tableau
                     
-                    if (data.fullname) {
+                    if (data && data.fullname) {
                         document.getElementById('userBadge').innerText = data.fullname;
                     }
                     
-                    // Blindage de la comparaison d'ID
-                    if (data.id && (Number(data.id) === 12 || data.id == 12) && data.role === 'admin') {
+                    if (data && data.id && Number(data.id) === 12 && data.role === 'admin') {
                         document.getElementById('adminLink').style.display = 'flex';
                     } else {
                         document.getElementById('adminLink').style.display = 'none';
                     }
                 }
             } catch (err) {
-                console.error("Erreur de session rôle :", err);
+                console.error("Erreur vérification session :", err);
             }
         }
 
-        // 3. CHARGEMENT DYNAMIQUE DES VRAIS INSCRITS DE LA BASE DE DONNÉES
+        // 3. CHARGEMENT DYNAMIQUE DES SUGGESTIONS D'AMIS (COLONNE DROITE)
         async function loadSuggestions() {
             try {
                 const response = await fetch('/auth/suggestions'); 
@@ -419,7 +434,6 @@
                 
                 if (response.ok) {
                     const users = await response.json();
-                    
                     if (users && users.length > 0) {
                         suggestionList.innerHTML = users.map(user => `
                             <div class="suggestion-item">
@@ -430,20 +444,69 @@
                         return;
                     }
                 }
-                
-                suggestionList.innerHTML = '<p style="font-size: 13px; color: #94a3b8; margin: 10px 0; text-align: center;">Aucun autre membre pour le moment</p>';
-
+                suggestionList.innerHTML = '<p style="font-size: 13px; color: #94a3b8; text-align: center;">Aucun membre suggéré</p>';
             } catch (err) {
-                console.error("Erreur lors du chargement des suggestions :", err);
+                console.error("Erreur chargement suggestions :", err);
             }
         }
 
-        // Déclenchement propre de toutes les fonctions de manière séquentielle
+        // 4. CHARGEMENT DYNAMIQUE DES MESSAGES ET PHOTOS (COLONNE CENTRALE)
+        async function loadFeedPosts() {
+            try {
+                const response = await fetch('/posts'); 
+                const feedContainer = document.getElementById('feedPosts');
+
+                if (response.ok) {
+                    const posts = await response.json();
+
+                    if (!posts || posts.length === 0) {
+                        feedContainer.innerHTML = '<div class="post-card" style="text-align:center;"><p style="color:#64748b;">Aucun message partagé.</p></div>';
+                        return;
+                    }
+
+                    feedContainer.innerHTML = posts.map(post => {
+                        const postDate = new Date(post.created_at).toLocaleDateString('fr-FR', {
+                            day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit'
+                        });
+
+                        return `
+                            <div class="post-card">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                                    <strong style="color: #0f172a; font-size: 15px;">👤 ${post.fullname}</strong>
+                                    <span style="font-size: 12px; color: #94a3b8;">${postDate}</span>
+                                </div>
+                                
+                                <p style="color: #334155; font-size: 15px; line-height: 1.5; white-space: pre-wrap; margin-bottom: 15px;">${post.content || ''}</p>
+                                
+                                <!-- CORRECTION ALIGNEMENT LECTURE : image_url de la BDD -->
+                                ${post.image_url ? `
+                                    <div style="margin: 15px -25px; border-top: 1px solid #f1f5f9; border-bottom: 1px solid #f1f5f9; background-color: #f8fafc; text-align: center;">
+                                        <img src="${post.image_url}" alt="Image publication" style="max-width: 100%; max-height: 450px; display: block; margin: 0 auto; object-fit: contain;">
+                                    </div>
+                                ` : ''}
+                                
+                                <div style="display: flex; gap: 20px; border-top: 1px solid #f1f5f9; padding-top: 12px; margin-top: 10px;">
+                                    <button style="background: none; border: none; font-size: 14px; font-weight: 600; color: #64748b; cursor: pointer;">❤️ Like (0)</button>
+                                    <button style="background: none; border: none; font-size: 14px; font-weight: 600; color: #64748b; cursor: pointer;">💬 Commenter</button>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+                }
+            } catch (err) {
+                console.error("Erreur affichage flux :", err);
+            }
+        }
+
+        // Lancement séquentiel ordonné au chargement complet
         window.addEventListener('DOMContentLoaded', async () => {
             await checkUserRole();
             await loadSuggestions();
+            await loadFeedPosts();
         });
     </script>
+
+
 
 
 </body>

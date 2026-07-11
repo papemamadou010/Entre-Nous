@@ -601,6 +601,70 @@
             }
         });
 
+                       // 5. CHARGEMENT DYNAMIQUE DES PUBLICATIONS DE MYSQL (SÉCURISÉ ET FILTRÉ)
+        async function loadMyPosts() {
+            try {
+                const urlParams = new URLSearchParams(window.location.search);
+                let userId = urlParams.get('id');
+
+                // Si aucun ID n'est dans l'URL, on récupère notre propre ID via /auth/me
+                if (!userId) {
+                    const sessionCheck = await fetch('/auth/me');
+                    if (sessionCheck.ok) {
+                        const sessionData = await sessionCheck.json();
+                        userId = sessionData.id;
+                    }
+                }
+
+                if (!userId) return;
+
+                // 🔥 CORRECTION DE L'URL : On appelle l'API publique filtrée par ID
+                const response = await fetch(`/posts/user/${userId}`);
+                const gridContainer = document.getElementById('userPostsGrid');
+
+                if (response.ok) {
+                    const myPosts = await response.json();
+
+                    if (!myPosts || myPosts.length === 0) {
+                        gridContainer.innerHTML = `
+                            <div class="grid-post-card" style="grid-column: 1 / -1; text-align: center; padding: 40px; background: white; border-radius: 12px; border: 1px solid #e2e8f0;">
+                                <p style="color: #64748b; margin: 0;">Aucune publication partagée pour l'instant.</p>
+                            </div>`;
+                        return;
+                    }
+
+                    // Injection propre dans votre grille CSS de profile.html
+                    gridContainer.innerHTML = myPosts.map(post => {
+                        const postDate = new Date(post.created_at).toLocaleDateString('fr-FR', {
+                            day: 'numeric', month: 'short'
+                        });
+
+                        return `
+                            <div class="grid-post-card">
+                                ${post.image_url ? `
+                                    <img src="${post.image_url}" alt="Photo publication" class="grid-post-img">
+                                ` : `
+                                    <div style="width: 100%; height: 200px; background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 24px;">📝</div>
+                                `}
+                                <div class="grid-post-body">
+                                    <p style="margin: 0; font-size: 14px; color: #334155; line-height: 1.4;">${post.content ? post.content.substring(0, 60) : ''}${post.content && post.content.length > 60 ? '...' : ''}</p>
+                                    <span class="grid-post-time">Publié le ${postDate}</span>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+                }
+            } catch (err) {
+                console.error("Erreur lors du chargement des publications du profil :", err);
+            }
+        }
+
+        // Lancement séquentiel ordonné au chargement complet du profil
+        window.addEventListener('DOMContentLoaded', async () => {
+            await fetchUserProfileData();
+            await loadMyPosts();
+        });
+
         // Déclenchement automatique de la récupération au chargement de la page
         window.addEventListener('DOMContentLoaded', fetchUserProfileData);
     </script>

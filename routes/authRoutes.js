@@ -15,18 +15,18 @@ router.post('/forgot-password', authController.forgotPassword);
 router.get('/suggestions', adminController.getSuggestions);
 
 // CORRECTION CRUCIALE : Récupère TOUTES les informations en temps réel dans MySQL
+// Correction de la route /me pour renvoyer un objet JSON direct
 router.get('/me', async (req, res) => {
     try {
         if (req.session && req.session.userId) {
-            // Requête SQL pour extraire le profil ultra-frais
             const [rows] = await db.execute(
                 'SELECT id, fullname, email, role, bio, phone, address, avatar_url FROM users WHERE id = ?', 
                 [req.session.userId]
             );
 
             if (rows.length > 0) {
-                // Renvoie le profil complet lu directement dans MariaDB
-                res.json(rows[0]);
+                // IMPORTANT : On extrait l'objet unique index 0 pour éviter d'envoyer un tableau
+                res.json(rows[0]); 
             } else {
                 res.status(404).send("Utilisateur introuvable");
             }
@@ -39,14 +39,8 @@ router.get('/me', async (req, res) => {
     }
 });
 
-// Route pour mettre à jour la photo de profil en Base64
-router.put('/update-avatar', authController.updateAvatar);
-
-// Route pour enregistrer la biographie, le téléphone et la ville
-router.put('/update-profile', authController.updateProfileInfos);
-// Route publique pour voir le profil de n'importe quel membre
+// Route publique pour voir le profil de n'importe quel membre sans blocage admin
 router.get('/public-users/:id', authController.getPublicProfile);
-
 
 
 module.exports = router;
