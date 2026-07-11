@@ -413,7 +413,7 @@
         <aside class="left-column">
             <div class="sidebar-card">
                 <a href="/home.html">🏠 Accueil</a>
-                <a href="/messages.html">💬 Messages Privés</a>
+                <a href="javascript:void(0)" class="sidebar-item" onclick="openInboxModal()">💬 Messages Privés</a>
                 <a href="/notifications.html">🔔 Notifications</a>
                 <a href="/profile.html">👤 Mon Profil</a>
                 
@@ -867,6 +867,88 @@
             }
         }
 
+                // =================================================================
+        // 9. MODULE INTERACTIF DE BOÎTE DE RÉCEPTION (EFFET INSTAGRAM)
+        // =================================================================
+        
+        // Fonction A : Ouvrir la boîte de réception et charger la liste depuis MySQL
+        async function openInboxModal() {
+            document.getElementById('inboxModal').style.display = 'flex';
+            const container = document.getElementById('inboxConversationsList');
+            container.innerHTML = '<p style="text-align:center; font-size:14px; color:#64748b; margin-top:20px;">Chargement de vos messages...</p>';
+
+            try {
+                const response = await fetch('/messages/conversations');
+                if (response.ok) {
+                    const conversations = await response.json();
+
+                    if (!conversations || conversations.length === 0) {
+                        container.innerHTML = `
+                            <div style="text-align: center; padding: 40px 20px; color: #64748b;">
+                                <p style="font-size: 24px; margin-bottom: 5px;">💬</p>
+                                <p style="font-size: 14px; margin: 0; font-weight: 500;">Votre boîte de réception est vide.</p>
+                                <p style="font-size: 12px; color: #94a3b8; margin-top: 5px;">Recherchez des amis pour lancer une discussion !</p>
+                            </div>`;
+                        return;
+                    }
+
+                    // Génération chirurgicale de la liste des gens qui ont écrit
+                    container.innerHTML = conversations.map(conv => {
+                        const avatar = conv.contact_avatar || "https://flaticon.com";
+                        
+                        // Détecter si on a des messages non lus reçus de cette personne
+                        const hasUnread = conv.unread_count > 0;
+                        const unreadBadge = hasUnread ? `
+                            <span style="background: #ef4444; color: white; font-size: 11px; font-weight: bold; padding: 2px 7px; border-radius: 99px; min-width: 10px; text-align: center;">
+                                ${conv.unread_count}
+                            </span>` : '';
+
+                        // Formatage du texte de l'aperçu du dernier message
+                        const cleanMsg = conv.last_message || "A envoyé un message";
+                        const shortMsg = cleanMsg.length > 40 ? cleanMsg.substring(0, 40) + '...' : cleanMsg;
+
+                        return `
+                            <div onclick="redirectToChat(${conv.contact_id})" style="display: flex; align-items: center; gap: 15px; padding: 12px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 2px 4px rgba(0,0,0,0.01);" onmouseover="this.style.borderColor='#cbd5e1'; this.style.background='#f8fafc';" onmouseout="this.style.borderColor='#e2e8f0'; this.style.background='#ffffff';">
+                                <img src="${avatar}" alt="Avatar" style="width: 45px; height: 45px; border-radius: 50%; object-fit: cover; background: #f1f5f9; border: 1px solid #e2e8f0;">
+                                <div style="flex: 1; min-width: 0;">
+                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 3px;">
+                                        <strong style="font-size: 14px; color: #0f172a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; ${hasUnread ? 'font-weight: 800;' : 'font-weight: 600;'}">${conv.contact_name}</strong>
+                                    </div>
+                                    <p style="margin: 0; font-size: 13px; color: ${hasUnread ? '#0f172a' : '#64748b'}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; ${hasUnread ? 'font-weight: 700;' : 'font-weight: 400;'}">${shortMsg}</p>
+                                </div>
+                                ${unreadBadge}
+                            </div>
+                        `;
+                    }).join('');
+                }
+            } catch (err) {
+                console.error("Erreur lors de la lecture de la boîte de réception :", err);
+                container.innerHTML = '<p style="text-align:center; color:#ef4444; font-size:13px; padding:20px;">Erreur de connexion avec la base de données.</p>';
+            }
+        }
+
+        // Fonction B : Fermer la modale proprement
+        function closeInboxModal() {
+            document.getElementById('inboxModal').style.display = 'none';
+        }
+
+        // Fonction C : LA REDIRECTION MAGIQUE VERS LA DISCUSSION DE CET AMI PRÉCIS
+        function redirectToChat(contactId) {
+            closeInboxModal();
+            // On redirige automatiquement vers son profil avec un paramètre spécial ?id=...&openChat=true
+            window.location.href = `/profile.html?id=${contactId}&openChat=true`;
+        }
+
+                // Sécurité anti-crash : On vérifie si la modale existe bien avant de lui mettre l'écouteur
+        const inboxModalElement = document.getElementById('inboxModal');
+        if (inboxModalElement) {
+            inboxModalElement.addEventListener('click', (e) => {
+                if (e.target === inboxModalElement) closeInboxModal();
+            });
+        }
+
+
+
 
         // Lancement séquentiel ordonné au chargement complet de l'interface
         window.addEventListener('DOMContentLoaded', async () => {
@@ -875,6 +957,34 @@
             await loadFeedPosts();
         });
     </script>
+        <!-- MODALE BOÎTE DE RÉCEPTION (LISTE DES MESSAGES REÇUS) -->
+    <div id="inboxModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.6); align-items: center; justify-content: center; z-index: 2500;">
+        <div style="background: #ffffff; width: 100%; max-width: 420px; height: 500px; border-radius: 16px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.15);">
+            <!-- En-tête de la boîte de réception -->
+            <div style="background: #0f172a; color: #ffffff; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center;">
+                <h3 style="margin: 0; font-size: 16px; font-weight: 700;">📥 Votre boîte de réception</h3>
+                <button onclick="closeInboxModal()" style="background: none; border: none; color: #ffffff; font-size: 20px; font-weight: bold; cursor: pointer;">×</button>
+            </div>
+            <!-- Liste des discussions dynamiques MySQL -->
+            <div id="inboxConversationsList" style="flex: 1; overflow-y: auto; padding: 10px; background: #f8fafc; display: flex; flex-direction: column; gap: 8px;">
+                <!-- Chargement dynamique... -->
+            </div>
+        </div>
+    </div>
+
+    <!-- À METTRE TOUT EN BAS DE HOME.HTML (AVANT LE </body>) -->
+<div id="inboxModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.6); align-items: center; justify-content: center; z-index: 2500;">
+    <div style="background: #ffffff; width: 100%; max-width: 420px; height: 500px; border-radius: 16px; display: flex; flex-direction: column; overflow: hidden;">
+        <div style="background: #0f172a; color: #ffffff; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center;">
+            <h3 style="margin: 0; font-size: 16px; font-weight: 700;">📥 Votre boîte de réception</h3>
+            <button onclick="closeInboxModal()" style="background: none; border: none; color: #ffffff; font-size: 20px; font-weight: bold; cursor: pointer;">×</button>
+        </div>
+        <div id="inboxConversationsList" style="flex: 1; overflow-y: auto; padding: 10px; background: #f8fafc; display: flex; flex-direction: column; gap: 8px;"></div>
+    </div>
+</div>
+
+
+
 </body>
 </html>
 

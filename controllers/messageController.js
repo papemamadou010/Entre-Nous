@@ -55,3 +55,47 @@ exports.getChatHistory = async (req, res) => {
         res.status(500).send("Erreur lors de la récupération de la discussion");
     }
 };
+// 3. RÉCUPÉRER LA LISTE DES CONVERSATIONS EN COURS (BOÎTE DE RÉCEPTION)
+exports.getConversationsList = async (req, res) => {
+    try {
+        if (!req.session || !req.session.userId) {
+            return res.status(401).send("Non connecté");
+        }
+
+        const currentUserId = req.session.userId;
+
+        // Requête SQL avancée : On cherche tous les correspondants uniques (expéditeurs ou destinataires)
+        // et on récupère leur nom, leur avatar, le dernier message échangé et le compte des messages non lus.
+        const query = `
+            SELECT 
+                users.id AS contact_id,
+                users.fullname AS contact_name,
+                users.avatar_url AS contact_avatar,
+                msg.message AS last_message,
+                msg.created_at AS last_message_time,
+                (SELECT COUNT(*) FROM private_messages WHERE sender_id = users.id AND receiver_id = ? AND is_read = 0) AS unread_count
+            FROM users
+            JOIN private_messages msg ON (msg.sender_id = users.id AND msg.receiver_id = ?) 
+                                      OR (msg.sender_id = ? AND msg.receiver_id = users.id)
+            WHERE msg.id IN (
+                SELECT MAX(id) 
+                FROM private_messages 
+                WHERE sender_id = ? OR receiver_id = ?
+                GROUP BY IF(sender_id = ?, receiver_id, sender_id)
+            )
+            AND users.id != ?
+            ORDER BY msg.created_at DESC
+        `;
+
+        const [conversations] = await db.execute(query, [
+            currentUserId, currentUserId, currentUserId, 
+            currentUserId, currentUserId, currentUserId, 
+            currentUserId
+        ]);
+
+        res.json(conversations);
+    } catch (error) {
+        console.error("❌ Erreur lecture liste conversations :", error.message);
+        res.status(500).send("Erreur lors de la récupération de la boîte de réception");
+    }
+};

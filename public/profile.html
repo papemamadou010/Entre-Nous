@@ -819,6 +819,28 @@
             }
         }
 
+                // =================================================================
+        // DÉCLENCHEMENT INITIAL SYNCHRONISÉ ET SÉQUENTIEL AVEC RADAR CHAT
+        // =================================================================
+        window.addEventListener('DOMContentLoaded', async () => {
+            await fetchUserProfileData();
+            await loadMyPosts();
+
+            // ⚡ RADAR AUTOMATIQUE : Si on vient de la boîte de réception, on ouvre le chat direct !
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('openChat') === 'true') {
+                const targetFullname = document.getElementById('profileFullname').innerText;
+                const targetUserId = urlParams.get('id');
+                
+                if (targetUserId && targetFullname) {
+                    // On simule un clic instantané pour déployer le chat
+                    setTimeout(() => {
+                        openChatWindow(targetUserId, targetFullname);
+                    }, 500); // Laisse une demi-seconde à l'interface pour charger proprement
+                }
+            }
+        });
+
         // =================================================================
         // DÉCLENCHEMENT INITIAL SYNCHRONISÉ ET SÉQUENTIEL
         // =================================================================
