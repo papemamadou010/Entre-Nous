@@ -28,6 +28,37 @@ db.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar_url LONGTEXT NULL"
   .catch(err => console.error("❌ Erreur de mise à niveau BDD :", err.message));
 
 
+  // 🛠️ SCRIPT AUTOMATIQUE DE MISE À NIVEAU DE LA BASE DE DONNÉES (AVATAR + BIO + POSTS + LIKES + COMMENTS)
+db.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar_url LONGTEXT NULL")
+  .then(() => db.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS bio TEXT NULL"))
+  .then(() => db.execute("ALTER TABLE users MODIFY COLUMN avatar_url LONGTEXT NULL"))
+  .then(() => db.execute("ALTER TABLE posts ADD COLUMN IF NOT EXISTS image_url LONGTEXT NULL"))
+  .then(() => db.execute(`
+    CREATE TABLE IF NOT EXISTS likes (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        user_id INT NOT NULL,
+        post_id INT NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE KEY unique_user_post (user_id, post_id),
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+        FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE
+    )
+  `))
+  .then(() => db.execute(`
+    CREATE TABLE IF NOT EXISTS comments (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        content TEXT NOT NULL,
+        user_id INT NOT NULL,
+        post_id INT NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+        FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE
+    )
+  `)) // <-- CRÉE LA TABLE COMMENTS LIÉE AUX UTILISATEURS ET AUX POSTS
+  .then(() => console.log("🚀 BASE DE DONNÉES PRÊTE : Tous les modules, les likes et la table 'comments' sont activés !"))
+  .catch(err => console.error("❌ Erreur de mise à niveau BDD :", err.message));
+
+
 // 🛠️ SCRIPT AUTOMATIQUE DE MISE À NIVEAU DE LA BASE DE DONNÉES
 // Configuration des colonnes pour l'avatar, la bio et l'image des publications
 db.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar_url LONGTEXT NULL")

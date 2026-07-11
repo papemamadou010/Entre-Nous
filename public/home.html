@@ -564,7 +564,7 @@
             }
         }
 
-        // 4. CHARGEMENT DYNAMIQUE DES MESSAGES ET PHOTOS (COLONNE CENTRALE)
+                // 4. CHARGEMENT DYNAMIQUE DES MESSAGES, PHOTOS ET SECTIONS COMMENTAIRES
         async function loadFeedPosts() {
             try {
                 const response = await fetch('/posts'); 
@@ -584,7 +584,7 @@
                         });
 
                         return `
-                            <div class="post-card" style="background: white; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; margin-bottom: 20px;">
+                            <div class="post-card" style="background: white; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; margin-bottom: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.01);">
                                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
                                     <strong style="color: #0f172a; font-size: 15px;">👤 ${post.fullname}</strong>
                                     <span style="font-size: 12px; color: #94a3b8;">${postDate}</span>
@@ -596,12 +596,26 @@
                                     </div>
                                 ` : ''}
                                 
-                                <!-- CORRECTIONS ICI : BOUTON LIKE CONNECTÉ AU RADAR MYSQL -->
                                 <div style="display: flex; gap: 20px; border-top: 1px solid #f1f5f9; padding-top: 12px; margin-top: 10px;">
                                     <button onclick="handleLike(${post.id}, this)" style="background: none; border: none; font-size: 14px; font-weight: 600; color: #64748b; cursor: pointer; display: flex; align-items: center; gap: 5px; transition: all 0.2s;">
                                         ❤️ Like <span class="like-count" style="font-weight: 700; color: #0095f6;">(${post.total_likes || 0})</span>
                                     </button>
-                                    <button style="background: none; border: none; font-size: 14px; font-weight: 600; color: #64748b; cursor: pointer;">💬 Commenter</button>
+                                    <!-- Bouton Commenter connecté à la fonction toggle -->
+                                    <button onclick="toggleCommentsSection(${post.id}, this)" style="background: none; border: none; font-size: 14px; font-weight: 600; color: #64748b; cursor: pointer; display: flex; align-items: center; gap: 5px;">
+                                        💬 Commenter
+                                    </button>
+                                </div>
+
+                                <!-- SECTION DES COMMENTAIRES CACHÉE PAR DÉFAUT -->
+                                <div id="commentsWrapper-${post.id}" style="display: none; border-top: 1px solid #f1f5f9; margin-top: 15px; padding-top: 15px;">
+                                    <!-- Liste où vont s'empiler les commentaires -->
+                                    <div id="commentsList-${post.id}" style="max-height: 250px; overflow-y: auto; margin-bottom: 15px; display: flex; flex-direction: column; gap: 10px;"></div>
+                                    
+                                    <!-- Formulaire d'envoi rapide d'un commentaire -->
+                                    <div style="display: flex; gap: 10px;">
+                                        <input type="text" id="commentInput-${post.id}" placeholder="Écrire un commentaire public..." style="flex: 1; padding: 10px 15px; border: 1px solid #e2e8f0; border-radius: 20px; font-size: 14px; outline: none; background: #f8fafc;" onkeypress="if(event.key === 'Enter') submitComment(${post.id})">
+                                        <button onclick="submitComment(${post.id})" style="background: #0095f6; color: white; border: none; padding: 0 15px; border-radius: 20px; font-size: 13px; font-weight: 600; cursor: pointer;">Envoyer</button>
+                                    </div>
                                 </div>
                             </div>
                         `;
@@ -731,6 +745,89 @@
                 console.error("Erreur réseau traitement like :", err);
             }
         }
+                // =================================================================
+        // 7. MODULE DE GESTION DES COMMENTAIRES EN CASCADE
+        // =================================================================
+        
+        // Fonction A : Ouvrir/Fermer la section et charger les messages correspondants
+        async function toggleCommentsSection(postId, buttonElement) {
+            const wrapper = document.getElementById(`commentsWrapper-${postId}`);
+            
+            if (wrapper.style.display === "none") {
+                wrapper.style.display = "block";
+                buttonElement.style.color = "#0095f6"; // Le bouton s'allume en bleu
+                
+                // Charger immédiatement les commentaires stockés en BDD
+                await loadCommentsForPost(postId);
+            } else {
+                wrapper.style.display = "none";
+                buttonElement.style.color = "#64748b"; // Le bouton redevient gris
+            }
+        }
+
+        // Fonction B : Lire la table 'comments' et injecter les lignes HTML
+        async function loadCommentsForPost(postId) {
+            const listContainer = document.getElementById(`commentsList-${postId}`);
+            if (!listContainer) return;
+
+            try {
+                const response = await fetch(`/posts/${postId}/comments`);
+                if (response.ok) {
+                    const comments = await response.json();
+
+                    if (comments.length === 0) {
+                        listContainer.innerHTML = '<p style="font-size: 13px; color: #94a3b8; text-align: center; margin: 5px 0;">Aucun commentaire. Soyez le premier à réagir !</p>';
+                        return;
+                    }
+
+                    listContainer.innerHTML = comments.map(comment => {
+                        const avatar = comment.avatar_url || "https://flaticon.com";
+                        return `
+                            <div style="display: flex; gap: 10px; align-items: flex-start; padding: 8px 12px; background: #f8fafc; border-radius: 12px;">
+                                <img src="${avatar}" alt="Avatar" style="width: 28px; height: 28px; border-radius: 50%; object-fit: cover;">
+                                <div style="flex: 1;">
+                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px;">
+                                        <strong style="font-size: 13px; color: #0f172a;">${comment.fullname}</strong>
+                                    </div>
+                                    <p style="margin: 0; font-size: 13.5px; color: #334155; line-height: 1.4; white-space: pre-wrap;">${comment.content}</p>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+                    
+                    // Scroll automatique vers le bas pour voir le dernier commentaire arrivé
+                    listContainer.scrollTop = listContainer.scrollHeight;
+                }
+            } catch (err) {
+                console.error("Erreur lecture commentaires :", err);
+            }
+        }
+
+        // Fonction C : Envoyer un nouveau commentaire à MySQL
+        async function submitComment(postId) {
+            const inputElement = document.getElementById(`commentInput-${postId}`);
+            const content = inputElement.value.trim();
+
+            if (!content) return;
+
+            try {
+                const response = await fetch(`/posts/${postId}/comments`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ content })
+                });
+
+                if (response.ok) {
+                    inputElement.value = ""; // On vide le champ textuel
+                    await loadCommentsForPost(postId); // On recharge instantanément la liste sans toucher au reste de la page
+                } else {
+                    alert("Erreur lors de l'envoi du commentaire.");
+                }
+            } catch (err) {
+                console.error("Erreur réseau ajout commentaire :", err);
+            }
+        }
+
 
 
         // Lancement séquentiel ordonné au chargement complet de l'interface

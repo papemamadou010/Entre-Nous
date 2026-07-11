@@ -103,3 +103,54 @@ exports.toggleLike = async (req, res) => {
         res.status(500).send("Erreur lors de la gestion du like : " + error.message);
     }
 };
+
+// 5. AJOUTER UN COMMENTAIRE SUR UNE PUBLICATION
+exports.addComment = async (req, res) => {
+    try {
+        if (!req.session || !req.session.userId) {
+            return res.status(401).send("Vous devez être connecté pour commenter.");
+        }
+
+        const userId = req.session.userId;
+        const { postId } = req.params;
+        const { content } = req.body;
+
+        if (!content || content.trim() === '') {
+            return res.status(400).send("Le commentaire ne peut pas être vide.");
+        }
+
+        const query = 'INSERT INTO comments (content, user_id, post_id, created_at) VALUES (?, ?, ?, NOW())';
+        await db.execute(query, [content, userId, postId]);
+
+        res.status(201).send("Commentaire ajouté avec succès !");
+    } catch (error) {
+        console.error("❌ Erreur ajout commentaire :", error.message);
+        res.status(500).send("Erreur lors de l'ajout du commentaire : " + error.message);
+    }
+};
+
+// 6. RÉCUPÉRER LES COMMENTAIRES D'UNE PUBLICATION SPÉCIFIQUE
+exports.getComments = async (req, res) => {
+    try {
+        if (!req.session || !req.session.userId) {
+            return res.status(401).send("Non connecté");
+        }
+
+        const { postId } = req.params;
+
+        // Requête avec jointure pour récupérer le nom de l'auteur et son avatar en même temps
+        const query = `
+            SELECT comments.id, comments.content, comments.created_at, users.fullname, users.avatar_url 
+            FROM comments 
+            JOIN users ON comments.user_id = users.id 
+            WHERE comments.post_id = ?
+            ORDER BY comments.created_at ASC
+        `;
+        
+        const [comments] = await db.execute(query, [postId]);
+        res.json(comments);
+    } catch (error) {
+        console.error("❌ Erreur lecture commentaires :", error.message);
+        res.status(500).send("Erreur lors de la récupération des commentaires");
+    }
+};

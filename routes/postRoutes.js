@@ -14,4 +14,8 @@ router.get('/user/:id', postController.getUserPosts);
 // Route pour aimer ou retirer son J'aime d'une publication
 router.post('/:postId/like', postController.toggleLike);
 
+// Routes pour la gestion des commentaires sous un post
+router.post('/:postId/comments', postController.addComment);
+router.get('/:postId/comments', postController.getComments);
+
 module.exports = router;
