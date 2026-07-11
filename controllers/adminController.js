@@ -138,16 +138,20 @@ exports.updateUserProfile = async (req, res) => {
     }
 };
 
-// 8. Récupérer les suggestions de membres (Les 5 derniers inscrits sur EntreNous)
+// 8. Récupérer les suggestions de membres (Vrais inscrits de MySQL uniquement)
 exports.getSuggestions = async (req, res) => {
     try {
-        // 🔒 NOTE : Ici, on n'ajoute pas le verrou d'ID 12 car n'importe quel membre connecté (simple ou admin) a le droit de voir ses suggestions de contact !
-        const currentUserId = req.session.userId || 12;
+        if (!req.session || !req.session.userId) {
+            return res.status(401).send("Non connecté");
+        }
+        
+        const currentUserId = req.session.userId;
 
+        // Requête propre : On extrait uniquement les vrais membres inscrits, en excluant soi-même
         const query = `
-            SELECT id, fullname 
+            SELECT id, fullname, avatar_url 
             FROM users 
-            WHERE id != ? AND role != 'admin'
+            WHERE id != ?
             ORDER BY created_at DESC 
             LIMIT 5
         `;

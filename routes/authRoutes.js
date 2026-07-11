@@ -42,5 +42,7 @@ router.get('/me', async (req, res) => {
 // Route publique pour voir le profil de n'importe quel membre sans blocage admin
 router.get('/public-users/:id', authController.getPublicProfile);
 
+// Route publique pour la recherche d'amis inscrits
+router.get('/search', authController.searchUsers);
 
 module.exports = router;

@@ -260,15 +260,151 @@
             .left-column { display: none; }
             .navbar { padding: 0 20px; }
         }
+                /* STYLES AJUSTÉS DE LA NAVBAR */
+        .navbar {
+            box-shadow: 0 2px 10px rgba(0,0,0,0.03) !important;
+            padding: 0 30px !important;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 60px;
+            background: #ffffff;
+            border-bottom: 1px solid #e2e8f0;
+            box-sizing: border-box;
+            z-index: 1000;
+        }
+        .nav-left h1 { font-size: 22px; color: #0f172a; font-weight: 800; margin: 0; }
+        
+        /* CONTENEUR DE LA BARRE DE RECHERCHE CENTRÉE */
+        .nav-search-container {
+            position: relative;
+            width: 100%;
+            max-width: 400px;
+            margin: 0 20px;
+        }
+        .search-input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+        .search-icon {
+            position: absolute;
+            left: 12px;
+            color: #94a3b8;
+            font-size: 14px;
+        }
+        .nav-search-container input {
+            width: 100%;
+            padding: 10px 15px 10px 38px;
+            border: 1px solid #e2e8f0;
+            border-radius: 99px;
+            font-size: 14px;
+            background-color: #f8fafc;
+            color: #0f172a;
+            transition: all 0.2s ease;
+            outline: none;
+            box-sizing: border-box;
+        }
+        .nav-search-container input:focus {
+            background-color: #ffffff;
+            border-color: #0095f6;
+            box-shadow: 0 0 0 3px rgba(0, 149, 246, 0.15);
+        }
+
+        /* LISTE DÉROULANTE DES RÉSULTATS DE RECHERCHE */
+        .search-results-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            width: 100%;
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            margin-top: 8px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+            max-height: 320px;
+            overflow-y: auto;
+            display: none;
+            z-index: 2000;
+            box-sizing: border-box;
+        }
+        .search-result-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 15px;
+            cursor: pointer;
+            transition: background 0.2s;
+            text-decoration: none;
+            color: #0f172a;
+        }
+        .search-result-item:hover {
+            background-color: #f8fafc;
+        }
+        .search-result-avatar {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            object-fit: cover;
+            background-color: #f1f5f9;
+        }
+        .search-result-name {
+            font-size: 14px;
+            font-weight: 600;
+        }
+        .search-no-results {
+            padding: 15px;
+            text-align: center;
+            color: #64748b;
+            font-size: 13px;
+        }
+
+        /* BADGE UTILISATEUR EN HAUT À DROITE */
+        .user-profile-badge {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            padding: 5px 12px;
+            border-radius: 99px;
+            transition: background 0.2s;
+        }
+        .user-profile-badge:hover { background-color: #f1f5f9; }
+        #navbarAvatarImg { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; }
+        #userBadge { font-size: 14px; font-weight: 600; color: #334155; }
+
     </style>
 </head>
 <body>
 
     <!-- Barre supérieure fixe unifiée -->
+        <!-- BARRE SUPÉRIEURE ULTRA-MODERNE -->
+        <!-- BARRE SUPÉRIEURE ULTRA-MODERNE -->
     <nav class="navbar">
-        <h1>EntreNous</h1>
-        <div class="user-badge-top" id="userBadge">Membre</div>
+        <div class="nav-left">
+            <h1 onclick="window.location.href='/home.html'" style="cursor:pointer;">EntreNous</h1>
+        </div>
+        
+        <!-- ZONE DE RECHERCHE CENTRÉE -->
+        <div class="nav-search-container">
+            <div class="search-input-wrapper">
+                <span class="search-icon">🔍</span>
+                <input type="text" id="searchInput" placeholder="Rechercher des amis inscrits..." autocomplete="off">
+            </div>
+            <!-- Liste déroulante des résultats de recherche -->
+            <div id="searchResultsDropdown" class="search-results-dropdown"></div>
+        </div>
+
+        <div class="nav-right">
+            <div class="user-profile-badge" onclick="window.location.href='/profile.html'">
+                <img src="https://flaticon.com" alt="Avatar Navbar" id="navbarAvatarImg">
+                <span id="userBadge">Membre</span>
+            </div>
+        </div>
     </nav>
+
+
 
     <!-- Mise en page principale en 3 colonnes -->
     <main class="main-layout">
@@ -356,15 +492,14 @@
         <!-- SCRIPTS JAVASCRIPT REPRIS, SYNCHRONISÉS ET SÉCURISÉS -->
      <!-- ================= SCRIPT DE GESTION DU FLUX DYNAMIQUE (HOME.HTML) ================= -->
         <!-- ================= INTÉLLIGENCE SÉCURISÉE DU FIL D'ACTUALITÉ ================= -->
+        <!-- ================= INTÉLLIGENCE SÉCURISÉE DU FIL D'ACTUALITÉ (BLOC A) ================= -->
     <script>
-        // 1. SCRIPT D'ENVOI DE PUBLICATION AVEC CAPTURE STRICTE DE L'IMAGE [0]
+        // 1. SCRIPT D'ENVOI DE PUBLICATION AVEC IMAGE BASE64
         document.getElementById('postForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
             const content = document.getElementById('postContent').value;
             const imageInput = document.getElementById('postImage');
-            
-            // CORRECTION INDEX [0] : Extraction physique du fichier sélectionné
             const imageFile = (imageInput.files && imageInput.files.length > 0) ? imageInput.files[0] : null;
             let imageUrl = null;
 
@@ -374,7 +509,7 @@
                         const reader = new FileReader();
                         reader.onloadend = () => resolve(reader.result);
                         reader.onerror = (err) => reject(err);
-                        reader.readAsDataURL(imageFile); // Déclenche la conversion en Base64
+                        reader.readAsDataURL(imageFile);
                     });
                 } catch (readError) {
                     console.error("Erreur de conversion de l'image :", readError);
@@ -403,16 +538,19 @@
             }
         });
 
-        // 2. SÉCURITÉ ACCÈS : Vérification du rôle et affichage de l'Espace Admin
+        // 2. SÉCURITÉ ACCÈS : Affichage de l'Espace Admin et de l'avatar connecté
         async function checkUserRole() {
             try {
                 const response = await fetch('/auth/me');
                 if (response.ok) {
                     let data = await response.json();
-                    if (Array.isArray(data)) data = data[0]; // Extrait l'objet si retourné en tableau
+                    if (Array.isArray(data)) data = data[0]; 
                     
                     if (data && data.fullname) {
                         document.getElementById('userBadge').innerText = data.fullname;
+                        if (data.avatar_url) {
+                            document.getElementById('navbarAvatarImg').src = data.avatar_url;
+                        }
                     }
                     
                     if (data && data.id && Number(data.id) === 12 && data.role === 'admin') {
@@ -426,30 +564,6 @@
             }
         }
 
-        // 3. CHARGEMENT DYNAMIQUE DES SUGGESTIONS D'AMIS (COLONNE DROITE)
-        async function loadSuggestions() {
-            try {
-                const response = await fetch('/auth/suggestions'); 
-                const suggestionList = document.getElementById('suggestionList');
-                
-                if (response.ok) {
-                    const users = await response.json();
-                    if (users && users.length > 0) {
-                        suggestionList.innerHTML = users.map(user => `
-                            <div class="suggestion-item">
-                                <span class="suggestion-name">👤 ${user.fullname}</span>
-                                <a href="/profile.html?id=${user.id}" class="follow-btn">Voir</a>
-                            </div>
-                        `).join('');
-                        return;
-                    }
-                }
-                suggestionList.innerHTML = '<p style="font-size: 13px; color: #94a3b8; text-align: center;">Aucun membre suggéré</p>';
-            } catch (err) {
-                console.error("Erreur chargement suggestions :", err);
-            }
-        }
-
         // 4. CHARGEMENT DYNAMIQUE DES MESSAGES ET PHOTOS (COLONNE CENTRALE)
         async function loadFeedPosts() {
             try {
@@ -460,7 +574,7 @@
                     const posts = await response.json();
 
                     if (!posts || posts.length === 0) {
-                        feedContainer.innerHTML = '<div class="post-card" style="text-align:center;"><p style="color:#64748b;">Aucun message partagé.</p></div>';
+                        feedContainer.innerHTML = '<div class="post-card" style="text-align:center;"><p style="color:#64748b;">Aucun message partagé pour le moment.</p></div>';
                         return;
                     }
 
@@ -470,21 +584,17 @@
                         });
 
                         return `
-                            <div class="post-card">
+                            <div class="post-card" style="background: white; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; margin-bottom: 20px;">
                                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
                                     <strong style="color: #0f172a; font-size: 15px;">👤 ${post.fullname}</strong>
                                     <span style="font-size: 12px; color: #94a3b8;">${postDate}</span>
                                 </div>
-                                
                                 <p style="color: #334155; font-size: 15px; line-height: 1.5; white-space: pre-wrap; margin-bottom: 15px;">${post.content || ''}</p>
-                                
-                                <!-- CORRECTION ALIGNEMENT LECTURE : image_url de la BDD -->
                                 ${post.image_url ? `
                                     <div style="margin: 15px -25px; border-top: 1px solid #f1f5f9; border-bottom: 1px solid #f1f5f9; background-color: #f8fafc; text-align: center;">
-                                        <img src="${post.image_url}" alt="Image publication" style="max-width: 100%; max-height: 450px; display: block; margin: 0 auto; object-fit: contain;">
+                                        <img src="${post.image_url}" alt="Image" style="max-width: 100%; max-height: 450px; display: block; margin: 0 auto; object-fit: contain;">
                                     </div>
                                 ` : ''}
-                                
                                 <div style="display: flex; gap: 20px; border-top: 1px solid #f1f5f9; padding-top: 12px; margin-top: 10px;">
                                     <button style="background: none; border: none; font-size: 14px; font-weight: 600; color: #64748b; cursor: pointer;">❤️ Like (0)</button>
                                     <button style="background: none; border: none; font-size: 14px; font-weight: 600; color: #64748b; cursor: pointer;">💬 Commenter</button>
@@ -497,14 +607,100 @@
                 console.error("Erreur affichage flux :", err);
             }
         }
+        // =================================================================
+        // 3. CHARGEMENT DYNAMIQUE DES VRAIS INSCRITS (COLONNE DROITE)
+        // =================================================================
+        async function loadSuggestions() {
+            try {
+                const response = await fetch('/auth/suggestions'); 
+                const suggestionList = document.getElementById('suggestionList');
+                
+                if (response.ok) {
+                    const users = await response.json();
+                    
+                    if (users && users.length > 0) {
+                        suggestionList.innerHTML = users.map(user => {
+                            const userAvatar = user.avatar_url || "https://flaticon.com";
+                            return `
+                                <div class="suggestion-item" style="display: flex; align-items: center; justify-content: space-between; padding: 10px 15px; border-bottom: 1px solid #f1f5f9;">
+                                    <div style="display: flex; align-items: center; gap: 10px;">
+                                        <img src="${userAvatar}" alt="Avatar" style="width: 35px; height: 35px; border-radius: 50%; object-fit: cover; background: #f1f5f9;">
+                                        <span class="suggestion-name" style="font-size: 14px; font-weight: 600; color: #0f172a;">${user.fullname}</span>
+                                    </div>
+                                    <a href="/profile.html?id=${user.id}" class="follow-btn" style="padding: 6px 12px; background: #0095f6; color: white; border-radius: 6px; font-size: 12px; text-decoration: none; font-weight: 600;">Voir</a>
+                                </div>
+                            `;
+                        }).join('');
+                        return;
+                    }
+                }
+                
+                suggestionList.innerHTML = '<p style="font-size: 13px; color: #94a3b8; margin: 10px 0; text-align: center;">Aucun autre membre inscrit pour le moment</p>';
+            } catch (err) {
+                console.error("Erreur lors du chargement des suggestions :", err);
+            }
+        }
 
-        // Lancement séquentiel ordonné au chargement complet
+        // =================================================================
+        // 5. GESTION DE LA BARRE DE RECHERCHE D'AMIS EN TEMPS RÉEL (MYSQL)
+        // =================================================================
+        const searchInput = document.getElementById('searchInput');
+        const searchResultsDropdown = document.getElementById('searchResultsDropdown');
+
+        if (searchInput && searchResultsDropdown) {
+            searchInput.addEventListener('input', async (e) => {
+                const query = e.target.value.trim();
+
+                if (query.length < 1) {
+                    searchResultsDropdown.style.display = 'none';
+                    return;
+                }
+
+                try {
+                    const response = await fetch(`/auth/search?q=${encodeURIComponent(query)}`);
+                    if (response.ok) {
+                        const users = await response.json();
+                        
+                        if (users.length === 0) {
+                            searchResultsDropdown.innerHTML = '<div class="search-no-results">❌ Aucun ami inscrit trouvé</div>';
+                            searchResultsDropdown.style.display = 'block';
+                            return;
+                        }
+
+                        searchResultsDropdown.innerHTML = users.map(user => {
+                            const avatar = user.avatar_url || "https://flaticon.com";
+                            return `
+                                <a href="/profile.html?id=${user.id}" class="search-result-item">
+                                    <img src="${avatar}" alt="Avatar" class="search-result-avatar">
+                                    <span class="search-result-name">${user.fullname}</span>
+                                </a>
+                            `;
+                        }).join('');
+
+                        searchResultsDropdown.style.display = 'block';
+                    }
+                } catch (err) {
+                    console.error("Erreur lors de la recherche :", err);
+                }
+            });
+
+            document.addEventListener('click', (e) => {
+                if (!searchInput.contains(e.target) && !searchResultsDropdown.contains(e.target)) {
+                    searchResultsDropdown.style.display = 'none';
+                }
+            });
+        }
+
+        // Lancement séquentiel ordonné au chargement complet de l'interface
         window.addEventListener('DOMContentLoaded', async () => {
             await checkUserRole();
             await loadSuggestions();
             await loadFeedPosts();
         });
     </script>
+</body>
+</html>
+
 
 
 

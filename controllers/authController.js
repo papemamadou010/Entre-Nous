@@ -160,3 +160,30 @@ exports.getPublicProfile = async (req, res) => {
     }
 };
 
+// 7. RECHERCHE DYNAMIQUE D'UTILISATEURS INSCRITS
+exports.searchUsers = async (req, res) => {
+    try {
+        if (!req.session || !req.session.userId) {
+            return res.status(401).send("Non connecté");
+        }
+
+        const { q } = req.query; // Récupère le texte tapé (ex: /auth/search?q=ali)
+        if (!q || q.trim() === '') {
+            return res.json([]);
+        }
+
+        // Requête SQL cherchant dans les noms complets, en excluant l'utilisateur connecté
+        const query = `
+            SELECT id, fullname, avatar_url 
+            FROM users 
+            WHERE fullname LIKE ? AND id != ?
+            LIMIT 5
+        `;
+        
+        const [users] = await db.execute(query, [`%${q}%`, req.session.userId]);
+        res.json(users);
+    } catch (error) {
+        console.error("Erreur recherche backend :", error);
+        res.status(500).send("Erreur serveur lors de la recherche");
+    }
+};
