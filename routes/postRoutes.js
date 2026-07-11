@@ -18,4 +18,7 @@ router.post('/:postId/like', postController.toggleLike);
 router.post('/:postId/comments', postController.addComment);
 router.get('/:postId/comments', postController.getComments);
 
+// Route pour supprimer une publication spécifique
+router.delete('/:postId', postController.deletePost);
+
 module.exports = router;

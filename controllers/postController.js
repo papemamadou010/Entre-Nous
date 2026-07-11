@@ -28,24 +28,27 @@ exports.createPost = async (req, res) => {
     }
 };
 
-// 2. LIRE TOUTES LES PUBLICATIONS AVEC LE COMPTEUR DE LIKES RÉELS
+// 2. LIRE TOUTES LES PUBLICATIONS AVEC LE COMPTEUR DE LIKES ET L'ID DE L'AUTEUR (CORRIGÉ)
 exports.getFeedPosts = async (req, res) => {
     try {
         const query = `
-            SELECT posts.id, posts.content, posts.image_url, posts.created_at, users.fullname,
+            SELECT posts.id, posts.content, posts.image_url, posts.created_at, posts.user_id, users.fullname,
             (SELECT COUNT(*) FROM likes WHERE likes.post_id = posts.id) AS total_likes
             FROM posts 
             JOIN users ON posts.user_id = users.id 
             ORDER BY posts.created_at DESC
         `;
         
+        // [posts] extrait strictement le tableau de lignes de MariaDB
         const [posts] = await db.execute(query);
+        
         res.json(posts);
     } catch (error) {
         console.error("❌ ERREUR LECTURE FLUX POSTS :", error.message);
         res.status(500).send("Erreur lors de la récupération du fil d'actualité");
     }
 };
+
 
 
 // 3. RECUPERER LES PUBLICATIONS D'UN MEMBRE SPECIFIQUE (POUR PROFILE.HTML)
@@ -152,5 +155,42 @@ exports.getComments = async (req, res) => {
     } catch (error) {
         console.error("❌ Erreur lecture commentaires :", error.message);
         res.status(500).send("Erreur lors de la récupération des commentaires");
+    }
+};
+// 7. SUPPRIMER UNE PUBLICATION SÉCURISÉE (AUTEUR OU ADMIN PAPE)
+exports.deletePost = async (req, res) => {
+    try {
+        if (!req.session || !req.session.userId) {
+            return res.status(401).send("Non connecté");
+        }
+
+        const { postId } = req.params;
+        const currentUserId = req.session.userId;
+        const currentUserRole = req.session.userRole;
+
+        // 1. On va chercher le créateur du post pour vérifier les droits
+        const [postCheck] = await db.execute('SELECT user_id FROM posts WHERE id = ?', [postId]);
+
+        if (postCheck.length === 0) {
+            return res.status(404).send("Publication introuvable");
+        }
+
+        const postOwnerId = postCheck[0].user_id;
+
+        // 2. Sécurité : Seul l'auteur OU Pape (ID 12 + Admin) peut supprimer
+        const isOwner = Number(currentUserId) === Number(postOwnerId);
+        const isAdminPape = Number(currentUserId) === 12 && currentUserRole === 'admin';
+
+        if (!isOwner && !isAdminPape) {
+            return res.status(403).send("Droit de suppression refusé.");
+        }
+
+        // 3. Suppression dans la base de données (les likes et commentaires liés sauteront automatiquement grâce au ON DELETE CASCADE)
+        await db.execute('DELETE FROM posts WHERE id = ?', [postId]);
+
+        res.status(200).send("Publication supprimée avec succès !");
+    } catch (error) {
+        console.error("❌ Erreur suppression post :", error.message);
+        res.status(500).send("Erreur serveur lors de la suppression : " + error.message);
     }
 };
