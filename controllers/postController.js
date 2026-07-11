@@ -28,25 +28,25 @@ exports.createPost = async (req, res) => {
     }
 };
 
-// 2. LIRE TOUTES LES PUBLICATIONS POUR LE FIL PUBLIC (HOME.HTML)
+// 2. LIRE TOUTES LES PUBLICATIONS AVEC LE COMPTEUR DE LIKES RÉELS
 exports.getFeedPosts = async (req, res) => {
     try {
         const query = `
-            SELECT posts.id, posts.content, posts.image_url, posts.created_at, users.fullname 
+            SELECT posts.id, posts.content, posts.image_url, posts.created_at, users.fullname,
+            (SELECT COUNT(*) FROM likes WHERE likes.post_id = posts.id) AS total_likes
             FROM posts 
             JOIN users ON posts.user_id = users.id 
             ORDER BY posts.created_at DESC
         `;
         
-        // Extraction stricte du tableau de données rows de MySQL
         const [posts] = await db.execute(query);
-        
         res.json(posts);
     } catch (error) {
         console.error("❌ ERREUR LECTURE FLUX POSTS :", error.message);
         res.status(500).send("Erreur lors de la récupération du fil d'actualité");
     }
 };
+
 
 // 3. RECUPERER LES PUBLICATIONS D'UN MEMBRE SPECIFIQUE (POUR PROFILE.HTML)
 exports.getUserPosts = async (req, res) => {
@@ -70,5 +70,36 @@ exports.getUserPosts = async (req, res) => {
     } catch (error) {
         console.error("❌ ERREUR LECTURE POSTS PROFIL :", error.message);
         res.status(500).send("Erreur lors de la récupération des posts du profil");
+    }
+};
+
+// 4. GESTION DU BOUTON LIKE (VÉRIFIE L'EXISTENCE ET INTERDIT LES DOUBLONS)
+exports.toggleLike = async (req, res) => {
+    try {
+        if (!req.session || !req.session.userId) {
+            return res.status(401).send("Vous devez être connecté.");
+        }
+
+        const userId = req.session.userId;
+        const { postId } = req.params;
+
+        // 1. On cherche si cet utilisateur a déjà aimé cette publication precisa
+        const checkQuery = 'SELECT id FROM likes WHERE user_id = ? AND post_id = ?';
+        const [existingLike] = await db.execute(checkQuery, [userId, postId]);
+
+        if (existingLike.length > 0) {
+            // L'utilisateur a déjà aimé -> Action inverse : ON RETIRE LE LIKE
+            const deleteQuery = 'DELETE FROM likes WHERE user_id = ? AND post_id = ?';
+            await db.execute(deleteQuery, [userId, postId]);
+            return res.json({ liked: false, message: "Like retiré" });
+        } else {
+            // L'utilisateur n'a pas encore aimé -> ON RECONNAÎT LE LIKE
+            const insertQuery = 'INSERT INTO likes (user_id, post_id) VALUES (?, ?)';
+            await db.execute(insertQuery, [userId, postId]);
+            return res.json({ liked: true, message: "Publication aimée" });
+        }
+    } catch (error) {
+        console.error("❌ Erreur traitement Like :", error.message);
+        res.status(500).send("Erreur lors de la gestion du like : " + error.message);
     }
 };

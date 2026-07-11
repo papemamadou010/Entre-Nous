@@ -11,4 +11,7 @@ router.post('/create', postController.createPost);
 // Route publique pour récupérer uniquement les posts d'un utilisateur spécifique
 router.get('/user/:id', postController.getUserPosts);
 
+// Route pour aimer ou retirer son J'aime d'une publication
+router.post('/:postId/like', postController.toggleLike);
+
 module.exports = router;
