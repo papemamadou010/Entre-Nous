@@ -1,6 +1,6 @@
 const db = require('../config/db');
 
-// 1. ENVOYER UN MESSAGE PRIVÉ
+// 1. ENVOYER UN MESSAGE PRIVÉ (SÉCURISÉ PAR L'AMITIÉ)
 exports.sendPrivateMessage = async (req, res) => {
     try {
         if (!req.session || !req.session.userId) {
@@ -9,6 +9,16 @@ exports.sendPrivateMessage = async (req, res) => {
 
         const senderId = req.session.userId;
         const { receiverId, message } = req.body;
+
+        // 🔒 VERROU STRICT DU CAHIER DES CHARGES : Vérification d'amitié acceptée active
+        const [friendCheck] = await db.execute(
+            "SELECT id FROM friendships WHERE status = 'accepted' AND ((requester_id = ? AND receiver_id = ?) OR (requester_id = ? AND receiver_id = ?))",
+            [senderId, receiverId, receiverId, senderId]
+        );
+
+        if (friendCheck.length === 0) {
+            return res.status(403).send("🔒 Sécurité : Vous devez être amis acceptés pour communiquer en privé.");
+        }
 
         if (!message || message.trim() === '') {
             return res.status(400).send("Le message ne peut pas être vide.");
@@ -24,7 +34,7 @@ exports.sendPrivateMessage = async (req, res) => {
     }
 };
 
-// 2. RÉCUPÉRER L'HISTORIQUE DE DISCUSSION ENTRE DEUX UTILISATEURS
+// 2. RÉCUPÉRER L'HISTORIQUE DE DISCUSSION ENTRE DEUX UTILISATEURS (SÉCURISÉ PAR L'AMITIÉ)
 exports.getChatHistory = async (req, res) => {
     try {
         if (!req.session || !req.session.userId) {
@@ -34,7 +44,17 @@ exports.getChatHistory = async (req, res) => {
         const currentUserId = req.session.userId;
         const { targetUserId } = req.params;
 
-        // Requête chirurgicale : on prend les messages où (A écrit à B) OU (B écrit à A)
+        // 🔒 VERROU STRICT DU CAHIER DES CHARGES : Vérification d'amitié acceptée active
+        const [friendCheck] = await db.execute(
+            "SELECT id FROM friendships WHERE status = 'accepted' AND ((requester_id = ? AND receiver_id = ?) OR (requester_id = ? AND receiver_id = ?))",
+            [currentUserId, targetUserId, targetUserId, currentUserId]
+        );
+
+        if (friendCheck.length === 0) {
+            return res.status(403).send("🔒 Sécurité : Vous devez être amis acceptés pour consulter l'historique.");
+        }
+
+        // Requête originale préservée : on prend les messages échangés
         const query = `
             SELECT id, sender_id, receiver_id, message, is_read, created_at 
             FROM private_messages 
@@ -45,7 +65,7 @@ exports.getChatHistory = async (req, res) => {
 
         const [messages] = await db.execute(query, [currentUserId, targetUserId, targetUserId, currentUserId]);
         
-        // Bonus : Dès qu'on ouvre la discussion, on marque les messages reçus comme "lus" (is_read = 1)
+        // Dès qu'on ouvre la discussion, on marque les messages reçus comme "lus"
         const updateQuery = 'UPDATE private_messages SET is_read = 1 WHERE sender_id = ? AND receiver_id = ? AND is_read = 0';
         await db.execute(updateQuery, [targetUserId, currentUserId]);
 
@@ -55,6 +75,7 @@ exports.getChatHistory = async (req, res) => {
         res.status(500).send("Erreur lors de la récupération de la discussion");
     }
 };
+
 // 3. RÉCUPÉRER LA LISTE DES CONVERSATIONS EN COURS (BOÎTE DE RÉCEPTION)
 exports.getConversationsList = async (req, res) => {
     try {

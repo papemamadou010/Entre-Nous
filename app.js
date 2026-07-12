@@ -72,9 +72,12 @@ db.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar_url LONGTEXT NULL"
 
 const authRoutes = require('./routes/authRoutes');
 const postRoutes = require('./routes/postRoutes');
-const adminRoutes = require('./routes/adminRoutes'); // 1. IMPORTATION DES ROUTES ADMIN
+const adminRoutes = require('./routes/adminRoutes');
+const friendRoutes = require('./routes/friendRoutes');
+ // 1. IMPORTATION DES ROUTES ADMIN
 
-// 🛠️ SCRIPT AUTOMATIQUE DE MISE À NIVEAU DE LA BASE DE DONNÉES (TOTAL COMPLET)
+// 🛠️ UNIQUE ET UNIQUE SCRIPT AUTOMATIQUE DE MISE À NIVEAU DE LA BASE DE DONNÉES
+// (AVATAR + BIO + POSTS + LIKES + COMMENTS + PRIVATE MESSAGES + FRIENDSHIPS)
 db.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar_url LONGTEXT NULL")
   .then(() => db.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS bio TEXT NULL"))
   .then(() => db.execute("ALTER TABLE users MODIFY COLUMN avatar_url LONGTEXT NULL"))
@@ -112,9 +115,24 @@ db.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar_url LONGTEXT NULL"
         FOREIGN KEY (sender_id) REFERENCES users(id) ON DELETE CASCADE,
         FOREIGN KEY (receiver_id) REFERENCES users(id) ON DELETE CASCADE
     )
-  `)) // <-- CRÉE LA TABLE DES MESSAGES PRIVÉS
-  .then(() => console.log("🚀 BASE DE DONNÉES PRÊTE : Tous les modules et 'private_messages' sont activés !"))
-  .catch(err => console.error("❌ Erreur de mise à niveau BDD :", err.message));
+  `))
+  .then(() => db.execute(`
+    CREATE TABLE IF NOT EXISTS friendships (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        requester_id INT NOT NULL,
+        receiver_id INT NOT NULL,
+        status ENUM('pending', 'accepted', 'declined') DEFAULT 'pending',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE KEY unique_friendship (requester_id, receiver_id),
+        FOREIGN KEY (requester_id) REFERENCES users(id) ON DELETE CASCADE,
+        FOREIGN KEY (receiver_id) REFERENCES users(id) ON DELETE CASCADE
+    )
+  `)) // <-- CRÉE LA TABLE DE VERROUILLAGE DES INVITATIONS D'AMIS
+  .then(() => console.log("🚀 BASE DE DONNÉES PRÊTE : Tous les modules, les messages et la table 'friendships' sont activés !"))
+  .catch(err => console.error("❌ Erreur critique de mise à niveau BDD :", err.message));
+
+
+
 
 // Autoriser le passage des très longues chaînes de caractères (Base64)
 app.use(express.json({ limit: '50mb' }));
@@ -138,6 +156,7 @@ app.use('/auth', authRoutes);
 app.use('/posts', postRoutes);
 app.use('/admin-api', adminRoutes); // 2. ACTIVATION DU MODULE SECRÈT ADMIN
 app.use('/messages', messageRoutes);
+app.use('/friends', friendRoutes);
 
 
 // Route d'accueil principale corrigée (affiche index.html dès l'entrée sur le site)
@@ -148,6 +167,8 @@ app.get('/', (req, res) => {
 app.get('/forgot-password.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'forgot-password.html'));
 });
+
+
 
 // Démarrer le serveur
 const PORT = process.env.PORT || 3000;

@@ -637,18 +637,27 @@
 
         <!-- ================= COLONNE GAUCHE : NAVIGATION FIXED ================= -->
         <aside class="left-column">
-            <div class="sidebar-card">
-                <a href="/home.html">🏠 Accueil</a>
+                       <div class="sidebar-card" style="display: flex; flex-direction: column; gap: 4px; padding: 16px;">
+                <a href="/home.html" class="sidebar-item active">🏠 Accueil</a>
                 <a href="javascript:void(0)" class="sidebar-item" onclick="openInboxModal()">💬 Messages Privés</a>
-                <a href="/notifications.html">🔔 Notifications</a>
-                <a href="/profile.html">👤 Mon Profil</a>
                 
-                <!-- Le bouton rouge de l'Espace Admin de Pape -->
-                <a href="/admin/dashboard.html" id="adminLink" class="admin-btn-active" style="display: none;">🛠️ Espace Admin</a>
+                <!-- NOUVEAU : BOUTON INVITATIONS AVEC COMPTEUR DYNAMIQUE -->
+                <a href="javascript:void(0)" class="sidebar-item" onclick="openInvitationsModal()" style="display: flex; justify-content: space-between; align-items: center; width: 100%; box-sizing: border-box;">
+                    <span>📩 Invitations</span>
+                    <span id="invitationBadge" style="display: none; background: #ef4444; color: white; font-size: 11px; font-weight: bold; padding: 2px 7px; border-radius: 99px;">0</span>
+                </a>
                 
-                <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 15px 0;">
-                <a href="/" style="color: #ef4444;">🚪 Déconnexion</a>
+                <!-- NOUVEAU : BOUTON AMIS -->
+                <a href="javascript:void(0)" class="sidebar-item" onclick="openFriendsListModal()">👥 Mes Amis</a>
+                
+                <a href="#" class="sidebar-item">🔔 Notifications</a>
+                <a href="/profile.html" class="sidebar-item">👤 Mon Profil</a>
+                <hr style="border: 0; border-top: 1px solid #f1f5f9; margin: 10px 0;">
+                <!-- REMPLACEZ L'ANCIEN BOUTON PAR CELUI-CI -->
+<a href="javascript:void(0)" class="sidebar-item deconnexion-btn" onclick="handleLogout()">🚪 Déconnexion</a>
+
             </div>
+
         </aside>
 
         <!-- ================= COLONNE CENTRALE : FLUX D'ACTUALITÉ ================= -->
@@ -765,6 +774,7 @@
         });
 
         // 2. SÉCURITÉ ACCÈS : Affichage de l'Espace Admin et de l'avatar connecté
+                // 2. SÉCURITÉ ACCÈS : Affichage de l'Espace Admin et de l'avatar connecté (CORRIGÉ)
         async function checkUserRole() {
             try {
                 const response = await fetch('/auth/me');
@@ -773,22 +783,30 @@
                     if (Array.isArray(data)) data = data[0]; 
                     
                     if (data && data.fullname) {
-                        document.getElementById('userBadge').innerText = data.fullname;
+                        const badgeElement = document.getElementById('userBadge');
+                        if (badgeElement) badgeElement.innerText = data.fullname;
+                        
                         if (data.avatar_url) {
-                            document.getElementById('navbarAvatarImg').src = data.avatar_url;
+                            const navbarAvatar = document.getElementById('navbarAvatarImg');
+                            if (navbarAvatar) navbarAvatar.src = data.avatar_url;
                         }
                     }
                     
-                    if (data && data.id && Number(data.id) === 12 && data.role === 'admin') {
-                        document.getElementById('adminLink').style.display = 'flex';
-                    } else {
-                        document.getElementById('adminLink').style.display = 'none';
+                    // SÉCURITÉ INTÉGRÉE : On vérifie si l'élément HTML 'adminLink' existe avant d'agir
+                    const adminLinkElement = document.getElementById('adminLink');
+                    if (adminLinkElement) {
+                        if (data && data.id && Number(data.id) === 12 && data.role === 'admin') {
+                            adminLinkElement.style.display = 'flex';
+                        } else {
+                            adminLinkElement.style.display = 'none';
+                        }
                     }
                 }
             } catch (err) {
                 console.error("Erreur vérification session :", err);
             }
         }
+
 
         // 4. CHARGEMENT DYNAMIQUE DES MESSAGES, PHOTOS ET SECTIONS COMMENTAIRES
         async function loadFeedPosts() {
@@ -1173,15 +1191,162 @@
             });
         }
 
+                // =================================================================
+               // =================================================================
+        // 10. GESTION DE LA DÉCONNEXION SÉCURISÉE (CORRIGÉE EN METHODE GET)
+        // =================================================================
+        async function handleLogout() {
+            try {
+                // On interroge l'API avec la méthode GET d'origine de votre backend
+                const response = await fetch('/auth/logout', {
+                    method: 'GET'
+                });
+
+                // Si le serveur répond avec succès, ou s'il redirige, on nettoie l'écran
+                if (response.ok || response.redirected) {
+                    alert("Vous avez été déconnecté avec succès.");
+                    window.location.href = "/index.html"; // Retour à l'écran de connexion
+                } else {
+                    // Si votre route serveur ne renvoie pas un statut HTML standard mais détruit quand même la session
+                    console.log("Session nettoyée côté serveur.");
+                    window.location.href = "/index.html";
+                }
+            } catch (err) {
+                console.error("Erreur réseau déconnexion :", err);
+                // Sécurité absolue : si la session est détruite, on force le retour à l'index
+                window.location.href = "/index.html";
+            }
+        }
 
 
+                // =================================================================
+        // 11. GESTION DES INVITATIONS ET DES COMPTEURS D'AMIS (EFFET VIVANT)
+        // =================================================================
+        
+        // Fonction A : Vérifier les demandes en attente et allumer le badge rouge
+        async function checkPendingRequestsCount() {
+            try {
+                const response = await fetch('/friends/pending');
+                if (response.ok) {
+                    const requests = await response.json();
+                    const badge = document.getElementById('invitationBadge');
+                    
+                    if (requests && requests.length > 0) {
+                        badge.innerText = requests.length;
+                        badge.style.display = 'inline-block'; // On allume le badge rouge 🔴
+                    } else {
+                        badge.style.display = 'none'; // On le cache s'il n'y a rien
+                    }
+                }
+            } catch (err) {
+                console.error("Erreur compteur invitations :", err);
+            }
+        }
 
-        // Lancement séquentiel ordonné au chargement complet de l'interface
+        // Fonction B : Ouvrir la boîte des Invitations et proposer d'Accepter ou Supprimer
+        async function openInvitationsModal() {
+            document.getElementById('invitationsModal').style.display = 'flex';
+            const container = document.getElementById('requestsListContainer');
+            container.innerHTML = '<p style="text-align:center; font-size:13px; color:#64748b;">Chargement...</p>';
+
+            try {
+                const response = await fetch('/friends/pending');
+                if (response.ok) {
+                    const requests = await response.json();
+
+                    if (requests.length === 0) {
+                        container.innerHTML = '<p style="text-align:center; font-size:13.5px; color:#64748b; margin-top:20px;">🎉 Aucune invitation en attente pour le moment.</p>';
+                        return;
+                    }
+
+                    container.innerHTML = requests.map(req => {
+                        const avatar = req.avatar_url || "https://flaticon.com";
+                        return `
+                            <div style="display: flex; align-items: center; justify-content: space-between; background: #ffffff; padding: 12px; border-radius: 12px; border: 1px solid #e2e8f0; box-shadow: 0 2px 4px rgba(0,0,0,0.01);">
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <img src="${avatar}" alt="Avatar" style="width: 38px; height: 38px; border-radius: 50%; object-fit: cover;">
+                                    <strong style="font-size: 14px; color: #0f172a;">${req.fullname}</strong>
+                                </div>
+                                <div style="display: flex; gap: 8px;">
+                                    <button onclick="respondToFriendRequest(${req.id}, 'accepted')" style="background: #0f766e; color: white; border: none; padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; cursor: pointer;">Accepter</button>
+                                    <button onclick="respondToFriendRequest(${req.id}, 'declined')" style="background: #ef4444; color: white; border: none; padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; cursor: pointer;">Supprimer</button>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+                }
+            } catch (err) {
+                console.error("Erreur ouverture invitations :", err);
+            }
+        }
+
+        // Fonction C : Envoyer la réponse (Accepter / Supprimer) à MySQL
+        async function respondToFriendRequest(requesterId, action) {
+            try {
+                const response = await fetch('/friends/respond', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ requesterId, action })
+                });
+
+                if (response.ok) {
+                    // On actualise instantanément les compteurs et la liste ouverte
+                    await checkPendingRequestsCount();
+                    await openInvitationsModal();
+                }
+            } catch (err) {
+                console.error("Erreur traitement action ami :", err);
+            }
+        }
+
+        // Fonction D : Ouvrir la boîte contenant la liste de Mes Amis
+        async function openFriendsListModal() {
+            document.getElementById('friendsListModal').style.display = 'flex';
+            const container = document.getElementById('friendsListContainer');
+            container.innerHTML = '<p style="text-align:center; font-size:13px; color:#64748b;">Chargement...</p>';
+
+            try {
+                const response = await fetch('/friends/list');
+                if (response.ok) {
+                    const friends = await response.json();
+
+                    if (friends.length === 0) {
+                        container.innerHTML = '<p style="text-align:center; font-size:13.5px; color:#64748b; margin-top:20px;">👥 Vous n\'avez pas encore d\'amis connectés.</p>';
+                        return;
+                    }
+
+                    container.innerHTML = friends.map(friend => {
+                        const avatar = friend.avatar_url || "https://flaticon.com";
+                        return `
+                            <div style="display: flex; align-items: center; justify-content: space-between; background: #ffffff; padding: 12px; border-radius: 12px; border: 1px solid #e2e8f0;">
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <img src="${avatar}" alt="Avatar" style="width: 38px; height: 38px; border-radius: 50%; object-fit: cover;">
+                                    <strong style="font-size: 14px; color: #0f172a;">${friend.fullname}</strong>
+                                </div>
+                                <a href="/profile.html?id=${friend.id}" style="background: #f1f5f9; color: #0f766e; text-decoration: none; padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: bold;">Profil</a>
+                            </div>
+                        `;
+                    }).join('');
+                }
+            } catch (err) {
+                console.error("Erreur liste amis :", err);
+            }
+        }
+
+        // Fonctions de fermeture simples
+        function closeInvitationsModal() { document.getElementById('invitationsModal').style.display = 'none'; }
+        function closeFriendsListModal() { document.getElementById('friendsListModal').style.display = 'none'; }
+
+
+                // Lancement séquentiel ordonné au chargement complet de l'interface
         window.addEventListener('DOMContentLoaded', async () => {
             await checkUserRole();
+            await checkPendingRequestsCount(); // <-- Active le radar de demandes d'amis
             await loadSuggestions();
             await loadFeedPosts();
         });
+    </script>
+
     </script>
         <!-- MODALE BOÎTE DE RÉCEPTION (LISTE DES MESSAGES REÇUS) -->
     <div id="inboxModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.6); align-items: center; justify-content: center; z-index: 2500;">
@@ -1197,6 +1362,28 @@
             </div>
         </div>
     </div>
+        <!-- 1️⃣ MODALE : LISTE DES DEMANDES REÇUES (INVITATIONS) -->
+    <div id="invitationsModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.6); align-items: center; justify-content: center; z-index: 2600;">
+        <div style="background: #ffffff; width: 100%; max-width: 400px; height: 450px; border-radius: 16px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.15);">
+            <div style="background: #0f766e; color: #ffffff; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center;">
+                <h3 style="margin: 0; font-size: 15px; font-weight: 700;">📩 Demandes d'amis reçues</h3>
+                <button onclick="closeInvitationsModal()" style="background: none; border: none; color: white; font-size: 20px; cursor: pointer;">×</button>
+            </div>
+            <div id="requestsListContainer" style="flex: 1; overflow-y: auto; padding: 15px; background: #fbfaf8; display: flex; flex-direction: column; gap: 10px;"></div>
+        </div>
+    </div>
+
+    <!-- 2️⃣ MODALE : LISTE DES AMIS ACCEPTÉS -->
+    <div id="friendsListModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.6); align-items: center; justify-content: center; z-index: 2600;">
+        <div style="background: #ffffff; width: 100%; max-width: 400px; height: 450px; border-radius: 16px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.15);">
+            <div style="background: #0f766e; color: #ffffff; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center;">
+                <h3 style="margin: 0; font-size: 15px; font-weight: 700;">👥 Ma liste d'amis</h3>
+                <button onclick="closeFriendsListModal()" style="background: none; border: none; color: white; font-size: 20px; cursor: pointer;">×</button>
+            </div>
+            <div id="friendsListContainer" style="flex: 1; overflow-y: auto; padding: 15px; background: #fbfaf8; display: flex; flex-direction: column; gap: 10px;"></div>
+        </div>
+    </div>
+
 
     <!-- À METTRE TOUT EN BAS DE HOME.HTML (AVANT LE </body>) -->
 <div id="inboxModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.6); align-items: center; justify-content: center; z-index: 2500;">

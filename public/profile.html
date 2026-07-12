@@ -5,6 +5,122 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>EntreNous - Mon Profil</title>
     <style>
+
+                /* =================================================================
+           🎨 HARMONISATION GRAPHIQUE GLOBALE - THÈME VERT SAUGE (PROFIL)
+           ================================================================= */
+        @import url('https://googleapis.com');
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif !important;
+            background-color: #fbfaf8 !important; /* Fond crème lin chaleureux */
+            color: #1e293b !important;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* 📱 HARMONISATION DE LA NAVBAR ET DU NOM ENTRENOUS */
+        .navbar {
+            background-color: #ffffff !important;
+            border-bottom: 1px solid #f1f0ec !important;
+            box-shadow: 0 1px 3px rgba(15, 23, 42, 0.02) !important;
+        }
+        .nav-left h1 {
+            font-family: 'Plus Jakarta Sans', sans-serif !important;
+            font-weight: 800 !important;
+            letter-spacing: -1px !important;
+            color: #0f766e !important; /* 🔥 Le nom EntreNous s'allume enfin en Vert Sauge ! */
+        }
+        #userBadge {
+            font-family: 'Plus Jakarta Sans', sans-serif !important;
+            font-weight: 600 !important;
+        }
+
+        /* 👤 MISE EN PAGE PLEINE LARGEUR ÉPURÉE TYPE INSTAGRAM */
+        .main-layout, .profile-container, main {
+            display: block !important;
+            max-width: 935px !important;
+            margin: 0 auto !important;
+            padding: 40px 24px !important;
+            box-sizing: border-box !important;
+        }
+
+        /* Masquage de sécurité de la sidebar sur cette page */
+        .left-column, aside, .sidebar-card {
+            display: none !important;
+        }
+
+        /* 🟩 FORCE LES BOUTONS DU PROFIL EN VERT SAUGE (Modifier, Message Privé) */
+        .edit-profile-btn, #privateMessageBtn, button[type="submit"] {
+            background: linear-gradient(135deg, #0f766e 0%, #115e59 100%) !important;
+            color: #ffffff !important;
+            border: none !important;
+            border-radius: 99px !important; /* Style pilule moderne */
+            font-weight: 700 !important;
+            font-family: 'Plus Jakarta Sans', sans-serif !important;
+            cursor: pointer !important;
+            box-shadow: 0 4px 12px rgba(15, 118, 110, 0.15) !important;
+            transition: all 0.2s ease !important;
+        }
+        .edit-profile-btn:hover, #privateMessageBtn:hover, button[type="submit"]:hover {
+            background: #115e59 !important;
+            box-shadow: 0 6px 20px rgba(15, 118, 110, 0.3) !important;
+            transform: translateY(-1px) !important;
+        }
+
+        /* 🏠 REMODELAGE DE LA GRILLE DES PUBLICATIONS (LOOK PREMIUM) */
+        #userPostsGrid {
+            display: grid !important;
+            grid-template-columns: repeat(3, 1fr) !important; /* Grille 3x3 parfaite */
+            gap: 24px !important;
+            margin-top: 40px !important;
+        }
+        .grid-post-card {
+            background: #ffffff !important;
+            border: 1px solid #f1f0ec !important;
+            border-radius: 16px !important; /* Coins arrondis */
+            box-shadow: 0 4px 20px -2px rgba(15, 118, 110, 0.02) !important;
+            overflow: hidden;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        }
+        .grid-post-card:hover {
+            transform: translateY(-4px) !important;
+            box-shadow: 0 16px 35px -10px rgba(15, 118, 110, 0.08) !important;
+            border-color: rgba(15, 118, 110, 0.15) !important;
+        }
+        
+        .profile-fullname {
+            font-family: 'Plus Jakarta Sans', sans-serif !important;
+            font-weight: 700 !important;
+            color: #1e293b !important;
+        }
+
+
+                /* =================================================================
+           🎨 MISE EN PAGE PLEINE LARGEUR ÉPURÉE (SANS MENU LATÉRAL)
+           ================================================================= */
+        
+        /* Force le conteneur principal à s'étaler magnifiquement au centre */
+        .main-layout, .profile-container, main {
+            display: block !important;
+            max-width: 935px !important; /* Largeur standard premium type Instagram */
+            margin: 0 auto !important;
+            padding: 40px 20px !important;
+            box-sizing: border-box !important;
+        }
+
+        /* Supprime définitivement la colonne de gauche (le menu) si elle est présente par erreur */
+        .left-column, aside, .sidebar-card {
+            display: none !important;
+        }
+
+        /* Redimensionne la grille des publications pour qu'elle respire sur toute la page */
+        #userPostsGrid {
+            display: grid !important;
+            grid-template-columns: repeat(3, 1fr) !important; /* Un parfait alignement 3x3 */
+            gap: 28px !important;
+            margin-top: 40px !important;
+        }
+
         /* CONFIGURATION GLOBALE */
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -426,7 +542,10 @@
 
     <!-- Barre supérieure unifiée -->
     <nav class="navbar">
-        <h1>EntreNous</h1>
+        <!-- VERSION CORRIGÉE : L'IDENTITÉ S'ALLUME EN VERT SAUGE -->
+<h1 onclick="window.location.href='/home.html'" style="cursor:pointer; color: #0f766e !important; font-weight: 800 !important;">EntreNous</h1>
+
+
     </nav>
 
     <!-- Structure principale de la page -->
@@ -544,7 +663,7 @@
         });
 
         // 2. Chargement initial des données depuis MySQL (Mon Profil OU Profil ciblé)
-        async function fetchUserProfileData() {
+                async function fetchUserProfileData() {
             try {
                 const urlParams = new URLSearchParams(window.location.search);
                 const targetUserId = urlParams.get('id');
@@ -582,7 +701,7 @@
                         document.getElementById('profileAvatarImg').src = "https://flaticon.com";
                     }
 
-                    // 🎛️ INTEGRATION ADAPTATIVE DU BOUTON DE MESSAGERIE PRIVÉE (EFFET WAOUH)
+                    // 🎛️ INTEGRATION ADAPTATIVE ET DYNAMIQUE DU BOUTON RELATIONNEL (CORRIGÉ)
                     const editBtn = document.querySelector('.edit-profile-btn');
                     const avatarContainer = document.querySelector('.avatar-container');
                     const overlay = document.querySelector('.avatar-overlay');
@@ -592,7 +711,6 @@
                         messageBtn = document.createElement('button');
                         messageBtn.id = 'privateMessageBtn';
                         messageBtn.className = 'edit-profile-btn';
-                        messageBtn.style.backgroundColor = '#10b981'; // Vert messagerie moderne
                         messageBtn.style.marginTop = '10px';
                         editBtn.parentNode.appendChild(messageBtn);
                     }
@@ -605,14 +723,39 @@
                         if (overlay) overlay.style.display = 'flex';
                     } else {
                         if (editBtn) editBtn.style.display = 'none';
-                        if (messageBtn) {
-                            messageBtn.style.display = 'block';
-                            messageBtn.innerText = `💬 Écrire à ${data.fullname.split(' ')[0]}`;
-                            messageBtn.setAttribute('onclick', `openChatWindow(${data.id}, "${data.fullname}")`);
-                        }
                         avatarContainer.removeAttribute('onclick');
                         avatarContainer.style.cursor = 'default';
                         if (overlay) overlay.style.display = 'none';
+
+                        // 📡 INTERROGATION DU STATUT RELATIONNEL DEPUIS MYSQL
+                        fetch(`/friends/status/${data.id}`)
+                            .then(res => res.json())
+                            .then(rel => {
+                                if (messageBtn) {
+                                    messageBtn.style.display = 'block';
+                                    
+                                    if (rel.status === 'none') {
+                                        messageBtn.innerText = `➕ Ajouter en ami`;
+                                        messageBtn.style.backgroundColor = '#0f766e'; // Vert Sauge
+                                        messageBtn.setAttribute('onclick', `sendRequest(${data.id})`);
+                                    } 
+                                    else if (rel.status === 'sent_pending') {
+                                        messageBtn.innerText = `⏳ Invitation envoyée...`;
+                                        messageBtn.style.backgroundColor = '#64748b'; // Gris d'attente
+                                        messageBtn.removeAttribute('onclick');
+                                    } 
+                                    else if (rel.status === 'received_pending') {
+                                        messageBtn.innerText = `✔ Confirmer l'invitation`;
+                                        messageBtn.style.backgroundColor = '#b45309'; // Ambre/Champagne
+                                        messageBtn.setAttribute('onclick', `acceptDirectRequest(${data.id}, "${data.fullname}")`);
+                                    } 
+                                    else if (rel.status === 'friends') {
+                                        messageBtn.innerText = `💬 Écrire à ${data.fullname.split(' ')[0]}`;
+                                        messageBtn.style.backgroundColor = '#10b981'; // Vert messagerie original
+                                        messageBtn.setAttribute('onclick', `openChatWindow(${data.id}, "${data.fullname}")`);
+                                    }
+                                }
+                            });
                     }
 
                     const sessionCheck = await fetch('/auth/me');
@@ -631,6 +774,7 @@
                 console.error("Erreur globale de lecture du profil :", err);
             }
         }
+
 
         // 3. CAPTURE ET ENVOI DE LA PHOTO DE PROFIL EN BASE64 AU BACKEND
         document.getElementById('avatarUploadInput').addEventListener('change', async (e) => {
@@ -840,6 +984,42 @@
                 }
             }
         });
+
+                // =================================================================
+        // 7. INGENIERIE DES ACTIONS ENVOI ET ACCEPTATION DE RELATION
+        // =================================================================
+        async function sendRequest(receiverId) {
+            try {
+                const response = await fetch('/friends/request', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ receiverId })
+                });
+                if (response.ok) {
+                    alert("Demande d'ami envoyée avec succès !");
+                    fetchUserProfileData();
+                }
+            } catch (err) {
+                console.error("Erreur envoi demande :", err);
+            }
+        }
+
+        async function acceptDirectRequest(requesterId, fullname) {
+            try {
+                const response = await fetch('/friends/respond', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ requesterId, action: 'accepted' })
+                });
+                if (response.ok) {
+                    alert(`Vous êtes désormais ami avec ${fullname} !`);
+                    fetchUserProfileData();
+                }
+            } catch (err) {
+                console.error("Erreur acceptation :", err);
+            }
+        }
+
 
         // =================================================================
         // DÉCLENCHEMENT INITIAL SYNCHRONISÉ ET SÉQUENTIEL
