@@ -5,6 +5,232 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>EntreNous - Fil d'actualité</title>
     <style>
+
+
+        /* =================================================================
+           🌟 LE GRAND CHOC VISUEL - ACCUEIL MAGNIFIQUE ET IMMERSIF
+           ================================================================= */
+        @import url('https://googleapis.com');
+
+        /* 1. Ambiance de fond avec effets de lumière diffuse (Glow) */
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif !important;
+            background-color: #fbfaf7 !important;
+            /* Deux points de lumière douce en arrière-plan pour un effet haut de gamme */
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(15, 118, 110, 0.04) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(180, 83, 9, 0.03) 0px, transparent 50%) !important;
+            background-attachment: fixed !important;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* 2. Effet flottant premium sur vos blocs de contenu */
+        .sidebar-card, .post-card, .create-post-box, .trending-card {
+            background: #ffffff !important;
+            border: 1px solid rgba(15, 118, 110, 0.06) !important;
+            border-radius: 20px !important; /* Angles adoucis */
+            box-shadow: 0 10px 40px -10px rgba(15, 118, 110, 0.03), 0 4px 12px -4px rgba(15, 118, 110, 0.02) !important;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        }
+
+        /* Animation de soulèvement fluide au survol */
+        .post-card:hover, .create-post-box:hover, .trending-card:hover {
+            transform: translateY(-4px) !important;
+            box-shadow: 0 20px 40px -15px rgba(15, 118, 110, 0.08) !important;
+            border-color: rgba(15, 118, 110, 0.15) !important;
+        }
+
+        /* 3. Sublimation de la boîte de publication */
+        .create-post-box textarea {
+            font-family: 'Plus Jakarta Sans', sans-serif !important;
+            font-size: 16px !important;
+            font-weight: 500 !important;
+            color: #0f172a !important;
+        }
+        .create-post-box textarea:focus {
+            padding-left: 4px !important;
+            transition: all 0.2s ease;
+        }
+
+        /* 4. Intensification des boutons en Vert Sauge Lumineux */
+        .blue-btn, button[type="submit"], .follow-btn, .suggestion-item a {
+            background: linear-gradient(135deg, #0f766e 0%, #115e59 100%) !important;
+            box-shadow: 0 4px 12px rgba(15, 118, 110, 0.2) !important;
+            border-radius: 99px !important;
+            font-weight: 700 !important;
+            letter-spacing: -0.2px !important;
+            transition: all 0.2s ease !important;
+        }
+        .blue-btn:hover, button[type="submit"]:hover {
+            box-shadow: 0 6px 20px rgba(15, 118, 110, 0.35) !important;
+            transform: translateY(-1px) !important;
+        }
+
+        /* 5. Finitions élégantes sur les textes et titres */
+        .nav-left h1 {
+            font-family: 'Plus Jakarta Sans', sans-serif !important;
+            font-weight: 800 !important;
+            letter-spacing: -1px !important;
+            color: #0f766e !important;
+        }
+        .post-author, .suggestion-name {
+            font-family: 'Plus Jakarta Sans', sans-serif !important;
+            color: #0f172a !important;
+            font-weight: 700 !important;
+        }
+
+
+                /* =================================================================
+           ✨ PACK CONVIVIALITÉ ET FINITIONS PREMIUM (ACCUEIL CHALEUREUX)
+           ================================================================= */
+        
+        /* 1. Arrondis confortables et ombres douces pour toutes les cartes */
+        .sidebar-card, .post-card, .create-post-box, .trending-card {
+            border-radius: 16px !important;
+            border: 1px solid #e2e8f0 !important;
+            box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.02), 0 2px 6px -1px rgba(15, 23, 42, 0.01) !important;
+            transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+        }
+
+        /* Effet de soulèvement discret quand on passe sur une publication */
+        .post-card:hover {
+            transform: translateY(-2px) !important;
+            box-shadow: 0 12px 30px -10px rgba(15, 23, 42, 0.08) !important;
+        }
+
+        /* 2. Rendre la zone d'écriture "Que voulez-vous partager" ultra-propre */
+        .create-post-box textarea {
+            font-size: 15px !important;
+            line-height: 1.5 !important;
+            padding: 8px 0 !important;
+        }
+
+        /* 3. Modernisation des boutons Like et Commenter (Interactions vivantes) */
+        .post-actions button, .action-trigger-btn {
+            background: #f8fafc !important;
+            border: none !important;
+            padding: 8px 16px !important;
+            border-radius: 20px !important;
+            font-weight: 600 !important;
+            color: #64748b !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            gap: 6px !important;
+            cursor: pointer !important;
+            transition: all 0.2s ease !important;
+        }
+
+        /* Au survol du bouton Like */
+        .post-actions button:first-child:hover {
+            background: #fef2f2 !important; /* Fond rose très tendre */
+            color: #ef4444 !important;       /* Cœur rouge vif */
+        }
+
+        /* Au survol du bouton Commenter */
+        .post-actions button:last-child:hover {
+            background: #f0fdf4 !important;  /* Fond vert très tendre */
+            color: #0f766e !important;       /* Texte vert sauge */
+        }
+
+        /* 4. Harmonisation esthétique de la liste de suggestions d'amis */
+        #suggestionList .suggestion-item {
+            border-radius: 12px !important;
+            padding: 8px !important;
+            transition: background 0.2s !important;
+        }
+        #suggestionList .suggestion-item:hover {
+            background: #f8fafc !important;
+        }
+
+
+                /* =================================================================
+           🎨 AKCENT DE COULEUR VERT SAUGE EXCLUSIF (BOUTONS PUBLIER / VOIR)
+           ================================================================= */
+        
+        /* Force le bouton "Publier" (et tout bouton bleu de soumission) en Vert Sauge */
+        .blue-btn, button[type="submit"], input[type="submit"] {
+            background: #0f766e !important; /* Vert Sauge moderne et chic */
+            color: #ffffff !important;
+            border: none !important;
+            border-radius: 99px !important; /* Forme de pilule élégante */
+            font-weight: 700 !important;
+            cursor: pointer !important;
+            transition: background 0.2s ease !important;
+        }
+
+        /* Effet au survol de la souris sur le bouton de publication */
+        .blue-btn:hover, button[type="submit"]:hover, input[type="submit"]:hover {
+            background: #115e59 !important; /* Nuance de vert plus soutenue */
+        }
+
+        /* Force les boutons "Voir" (les liens ou boutons de suggestions d'amis) en Vert Sauge */
+        .follow-btn, .suggestion-item a, #suggestionList a {
+            background: #0f766e !important;
+            color: #ffffff !important;
+            border: none !important;
+            border-radius: 99px !important;
+            font-weight: 700 !important;
+            text-decoration: none !important;
+            display: inline-block !important;
+            text-align: center !important;
+            transition: background 0.2s ease !important;
+        }
+
+        /* Effet au survol de la souris sur le bouton "Voir" */
+        .follow-btn:hover, .suggestion-item a:hover, #suggestionList a:hover {
+            background: #115e59 !important;
+        }
+
+
+                /* =================================================================
+           🎨 NAPPE DE COULEURS - VERT SAUGE & CRÈME MINIMALISTE (PRO)
+           ================================================================= */
+        body {
+            background-color: #fbfaf8 !important; /* Fond crème lin chaleureux */
+            color: #1e293b !important;        /* Texte noir carbone mat */
+        }
+
+        /* Remodelage instantané de tous vos blocs en cartes flottantes douces */
+        .sidebar-card, .post-card, .create-post-box, .trending-card {
+            background: #ffffff !important;
+            border: 1px solid #f1f0ec !important;
+            border-radius: 20px !important; /* Coins bien arrondis */
+            box-shadow: 0 10px 35px -5px rgba(27, 38, 59, 0.03), 0 4px 12px -2px rgba(27, 38, 59, 0.02) !important; /* Ombres larges et diffuses */
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        /* Animation au survol des cartes */
+        .post-card:hover, .create-post-box:hover, .trending-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 16px 40px -10px rgba(27, 38, 59, 0.06) !important;
+        }
+
+        /* Écrasement automatique de l'ancien bleu Facebook vers le magnifique Vert Sauge */
+        .blue-btn, button[type="submit"], .follow-btn, .file-input-btn:hover {
+            background: #0f766e !important; /* Vert Eucalyptus pro */
+            color: #ffffff !important;
+            border-radius: 99px !important;
+            border: none !important;
+            font-weight: 700 !important;
+        }
+        
+        .blue-btn:hover, button[type="submit"]:hover, .follow-btn:hover {
+            background: #115e59 !important; /* Vert plus sombre au survol */
+        }
+
+        /* Harmonisation de la barre du haut */
+        .navbar {
+            background-color: #ffffff !important;
+            border-bottom: 1px solid #f1f0ec !important;
+            box-shadow: 0 1px 3px rgba(15, 23, 42, 0.02) !important;
+        }
+
+        /* Nettoyage du menu de gauche */
+        .sidebar-item.active {
+            background-color: #f0fdf4 !important; /* Fond vert très pâle */
+            color: #0f766e !important;
+        }
+
         /* CONFIGURATION GLOBALE */
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
