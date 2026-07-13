@@ -1,3 +1,6 @@
+// IMPORTATION INDISPENSABLE DE LA CONNEXION MYSQL POUR ÉVITER LE CRASH
+const db = require('../config/db');
+
 // 1. ENVOYER OU RE-TENTER UNE DEMANDE D'AMI (AVEC DÉCLENCHEUR DE NOTIFICATION INTEGRÉ)
 exports.sendFriendRequest = async (req, res) => {
     try {

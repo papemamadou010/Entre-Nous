@@ -17,16 +17,22 @@ router.get('/suggestions', adminController.getSuggestions);
 // CORRECTION CRUCIALE : Récupère TOUTES les informations en temps réel dans MySQL
 // Correction de la route /me pour renvoyer un objet JSON direct
 // CORRECTION CRUCIALE : Récupère TOUTES les informations (Y COMPRIS LES CHAMPS FACEBOOK)
+// CORRECTION CRUCIALE : Récupère TOUTES les informations (Y COMPRIS LES CHAMPS FACEBOOK ET LE STATUT DE PRÉSENCE)
 router.get('/me', async (req, res) => {
     try {
         if (req.session && req.session.userId) {
-            // AJOUT DES 6 COLONNES MANQUANTES DANS LE SELECT
+            const userId = req.session.userId;
+
+            // ⏱️ ACTUALISATION PARFAITE : Dit à MySQL que l'utilisateur connecté est actif à la seconde près
+            await db.execute('UPDATE users SET last_seen = NOW() WHERE id = ?', [userId]);
+
+            // AJOUT DE LA COLONNE 'last_seen' DANS LE SELECT GLOBAL
             const [rows] = await db.execute(
                 `SELECT id, fullname, email, role, bio, phone, address, avatar_url,
                         birthdate, gender, relationship_status, workplace, 
-                        education_university, education_highschool 
+                        education_university, education_highschool, last_seen 
                  FROM users WHERE id = ?`, 
-                [req.session.userId]
+                [userId]
             );
 
             if (rows.length > 0) {
@@ -42,6 +48,7 @@ router.get('/me', async (req, res) => {
         res.status(500).send("Erreur serveur : " + error.message);
     }
 });
+
 
 
 // Route publique pour voir le profil de n'importe quel membre sans blocage admin

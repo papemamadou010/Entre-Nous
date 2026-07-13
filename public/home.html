@@ -696,7 +696,11 @@
         <aside class="left-column">
                        <div class="sidebar-card" style="display: flex; flex-direction: column; gap: 4px; padding: 16px;">
                 <a href="/home.html" class="sidebar-item active">🏠 Accueil</a>
-                <a href="javascript:void(0)" class="sidebar-item" onclick="openInboxModal()">💬 Messages Privés</a>
+                <!-- RECHERCHEZ ET MODIFIEZ CETTE LIGNE DANS LE MENU DE HOME.HTML -->
+<a href="/messages.html" style="text-decoration: none; color: #475569; font-weight: 600; font-size: 14.5px; display: flex; align-items: center; gap: 10px;">
+    <span>💬</span> Messages Privés
+</a>
+
                 
                 <!-- NOUVEAU : BOUTON INVITATIONS AVEC COMPTEUR DYNAMIQUE -->
                 <a href="javascript:void(0)" class="sidebar-item" onclick="openInvitationsModal()" style="display: flex; justify-content: space-between; align-items: center; width: 100%; box-sizing: border-box;">

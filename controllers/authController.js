@@ -141,11 +141,11 @@ exports.getPublicProfile = async (req, res) => {
     try {
         const { id } = req.params;
         
-        // AJOUT DES 6 COLONNES CRUCIALES DANS LE SELECT DE L'AMI VISITÉ
+        // AJOUT SÉCURISÉ DE LA COLONNE LAST_SEEN À LA FIN DE VOTRE SELECT
         const query = `
             SELECT id, fullname, bio, phone, address, avatar_url,
                    birthdate, gender, relationship_status, workplace, 
-                   education_university, education_highschool 
+                   education_university, education_highschool, last_seen 
             FROM users WHERE id = ?
         `;
         
@@ -155,12 +155,14 @@ exports.getPublicProfile = async (req, res) => {
             return res.status(404).send("Utilisateur introuvable");
         }
 
+        // CONSERVATION STRICTE DE VOTRE LOGIQUE : On renvoie l'objet index 0 pour ne rien casser
         res.json(rows[0]);
     } catch (error) {
         console.error("❌ Erreur getPublicProfile :", error.message);
         res.status(500).send("Erreur lors de la récupération du profil");
     }
 };
+
 
 // 7. RECHERCHE DYNAMIQUE D'UTILISATEURS INSCRITS
 exports.searchUsers = async (req, res) => {

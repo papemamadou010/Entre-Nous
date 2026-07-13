@@ -156,10 +156,12 @@ db.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar_url LONGTEXT NULL"
     )
   `)) // <-- CRÉE LA TABLE DE VERROUILLAGE DES INVITATIONS D'AMIS
   .then(() => console.log("🚀 BASE DE DONNÉES PRÊTE : Tous les modules, les messages et la table 'friendships' sont activés !"))
+    // 🟢 TIROIR DE PRÉSENCE : ENREGISTRE LA DERNIÈRE ACTIVITÉ DE L'UTILISATEUR
+  .then(() => db.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS last_seen TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"))
+
+  
   .catch(err => console.error("❌ Erreur critique de mise à niveau BDD :", err.message));
-
-
-
+    
 
 // Autoriser le passage des très longues chaînes de caractères (Base64)
 app.use(express.json({ limit: '50mb' }));
@@ -181,6 +183,9 @@ app.use(express.static('views'));
 
 // Activer les modules de l'application
 app.use('/auth', authRoutes);
+// 🔌 CONNEXION OFFICIELLE DU ROUTEUR DE MESSAGERIE POUR LE WHATSAPP WEB
+app.use('/messages-api', require('./routes/messageRoutes'));
+
 app.use('/posts', postRoutes);
 app.use('/admin-api', adminRoutes); // 2. ACTIVATION DU MODULE SECRÈT ADMIN
 app.use('/messages', messageRoutes);

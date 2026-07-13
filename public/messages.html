@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EntreNous - Discussions</title>
+    <style>
+        @import url('https://googleapis.com');
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            margin: 0;
+            background-color: #f0f2f5;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* CONTENEUR PRINCIPAL APPLIQUANT LE DESIGN WHATSAPP WEB */
+        .whatsapp-container {
+            width: 100vw;
+            height: 100vh;
+            max-width: 1600px;
+            max-height: 95vh;
+            background-color: #ffffff;
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+            border-radius: 12px;
+            display: flex;
+            overflow: hidden;
+        }
+
+        /* ⬅️ COLONNE DE GAUCHE : LISTE DES DISCUSSIONS */
+        .side-pane {
+            width: 380px;
+            border-right: 1px solid #e9edef;
+            display: flex;
+            flex-direction: column;
+            background-color: #ffffff;
+            flex-shrink: 0;
+        }
+
+        .pane-header {
+            height: 60px;
+            background-color: #f0f2f5;
+            padding: 10px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-sizing: border-box;
+        }
+        .my-avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; cursor: pointer; }
+        .back-home-btn { background: #0f766e; color: white; border: none; padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; cursor: pointer; text-decoration: none; }
+
+        .search-container { padding: 8px 12px; background-color: #ffffff; border-bottom: 1px solid #e9edef; }
+        .search-bar { width: 100%; padding: 8px 12px; border: none; background-color: #f0f2f5; border-radius: 8px; font-size: 14px; outline: none; box-sizing: border-box; }
+
+        .chat-list { flex: 1; overflow-y: auto; }
+        .chat-item { display: flex; align-items: center; padding: 12px 16px; gap: 12px; cursor: pointer; border-bottom: 1px solid #f0f2f5; transition: background 0.2s; }
+        .chat-item:hover, .chat-item.active { background-color: #f0f2f5; }
+        .contact-avatar { width: 48px; height: 48px; border-radius: 50%; object-fit: cover; }
+        .chat-item-info { flex: 1; min-width: 0; }
+        .chat-item-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+        .contact-name { font-size: 15px; font-weight: 700; color: #111b21; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .chat-time { font-size: 12px; color: #667781; }
+        .chat-item-bottom { display: flex; justify-content: space-between; align-items: center; }
+        .last-msg-preview { font-size: 13.5px; color: #667781; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1; margin: 0; }
+        .unread-badge { background-color: #25d366; color: white; font-size: 12px; font-weight: 800; min-width: 18px; height: 18px; padding: 2px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-sizing: border-box; }
+
+        /* ➡️ COLONNE DE DROITE : ZONE DE CHAT PRINCIPALE */
+        .main-chat-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background-color: #efeae2; /* Couleur originale de fond WhatsApp */
+            position: relative;
+        }
+
+        /* Écran d'accueil si aucun chat n'est sélectionné */
+        .empty-state { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: #f8fafc; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 14px; z-index: 10; }
+        .empty-state h2 { margin: 0; color: #41525d; font-size: 24px; font-weight: 400; }
+        .empty-state p { margin: 0; color: #667781; font-size: 14px; max-width: 380px; line-height: 1.5; }
+
+        .chat-header { height: 60px; background-color: #f0f2f5; padding: 10px 16px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid #e9edef; box-sizing: border-box; }
+        .active-name { font-size: 15.5px; font-weight: 700; color: #111b21; margin: 0; }
+
+        .messages-log { flex: 1; overflow-y: auto; padding: 20px 40px; display: flex; flex-direction: column; gap: 8px; }
+        
+        /* Bulles de messages asymétriques */
+        .bubble-wrapper { display: flex; width: 100%; }
+        .bubble-wrapper.sent { justify-content: flex-end; }
+        .bubble-wrapper.received { justify-content: flex-start; }
+        
+        .chat-bubble { max-width: 60%; padding: 8px 12px; border-radius: 8px; font-size: 14.5px; line-height: 1.4; position: relative; box-shadow: 0 1px 1px rgba(0,0,0,0.08); word-break: break-word; }
+        .bubble-wrapper.sent .chat-bubble { background-color: #d9fdd3; color: #111b21; border-top-right-radius: 0; }
+        .bubble-wrapper.received .chat-bubble { background-color: #ffffff; color: #111b21; border-top-left-radius: 0; }
+
+        .bubble-time { font-size: 11px; color: #667781; text-align: right; margin-top: 4px; display: block; }
+
+        /* Barre d'envoi inférieure */
+        .chat-footer { height: 62px; background-color: #f0f2f5; padding: 10px 16px; display: flex; align-items: center; gap: 12px; box-sizing: border-box; }
+        .message-input { flex: 1; padding: 10px 16px; border: none; border-radius: 8px; font-size: 15px; outline: none; background-color: #ffffff; }
+        .send-action-btn { background-color: #0f766e; color: white; border: none; width: 42px; height: 42px; border-radius: 50%; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    </style>
+</head>
+<body>
+
+    <div class="whatsapp-container">
+        
+        <!-- ⬅️ PANNEAU GAUCHE : CONVERSATIONS -->
+        <aside class="side-pane">
+                        <!-- EN-TÊTE GAUCHE PARFAITEMENT PERSONNALISÉ -->
+            <div class="pane-header">
+                <div style="display: flex; align-items: center; gap: 12px; min-width: 0; flex: 1;">
+                    <img src="https://flaticon.com" id="myPaneAvatar" class="my-avatar" alt="Moi" onclick="window.location.href='/profile.html'">
+                    <!-- 👤 BALISE POUR VOTRE NOM EN TOUTES LETTRES -->
+                    <span id="myPaneFullname" style="font-size: 14.5px; font-weight: 700; color: #111b21; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Chargement...</span>
+                </div>
+                <a href="/home.html" class="back-home-btn">🏠 Accueil</a>
+            </div>
+
+            
+            <div class="search-container">
+                <input type="text" class="search-bar" placeholder="Rechercher ou démarrer une discussion">
+            </div>
+            
+            <div id="conversationsContainerList" class="chat-list">
+                <!-- Les lignes de conversations s'injectent ici -->
+            </div>
+        </aside>
+
+        <!-- ➡️ PANNEAU DROITE : CONVERSATION ACTIVE -->
+        <section class="main-chat-area">
+            
+            <!-- Écran d'attente initial -->
+            <div id="chatEmptyStateScreen" class="empty-state">
+                <div style="font-size: 50px;">💬</div>
+                <h2>EntreNous Web</h2>
+                <p>Envoyez et recevez des messages sans laisser votre téléphone connecté. Cliquez sur un ami pour démarrer.</p>
+            </div>
+
+            <!-- En-tête de la discussion en cours -->
+                        <!-- En-tête du chat actif synchronisé avec le statut -->
+            <div class="chat-header">
+                <img src="https://flaticon.com" id="activeChatAvatar" class="contact-avatar" style="width: 40px; height: 40px;">
+                <div style="display: flex; flex-direction: column;">
+                    <h3 id="activeChatName" class="active-name" style="margin: 0;">Sélectionnez une discussion</h3>
+                    <!-- 🟢 LE SOUS-TEXTE DE PRÉSENCE WHATSAPP -->
+                    <span id="activeChatStatus" style="font-size: 12px; color: #667781; font-weight: 500;"></span>
+                </div>
+            </div>
+
+            <!-- Journal des bulles de messages -->
+            <div id="chatMessagesLogStream" class="messages-log"></div>
+
+            <!-- Barre d'envoi inférieure -->
+            <form id="chatMessageSendingForm" class="chat-footer">
+                <input type="text" id="chatTypedInput" class="message-input" placeholder="Entrez un message" autocomplete="off">
+                <button type="submit" class="send-action-btn">➔</button>
+            </form>
+
+        </section>
+
+    </div>
+    <script>
+        let currentActiveContactId = null;
+
+                // 1. EXTRAIRE LA BOÎTE DE RÉCEPTION DEPUIS MYSQL (GAUCHE)
+        async function fetchMyConversations() {
+            try {
+                // Charge votre photo de profil et votre nom dans l'en-tête
+                const response = await fetch('/auth/me');
+                if (response.ok) {
+                    const me = await response.json();
+                    if (me.avatar_url) document.getElementById('myPaneAvatar').src = me.avatar_url;
+                    
+                    // 🔥 AJOUT CHIRURGICAL : Écrit votre vrai nom (Pape) à côté de la photo
+                    if (me.fullname) document.getElementById('myPaneFullname').innerText = me.fullname;
+                }
+
+                // Récupère l'historique global de vos correspondants
+                const resList = await fetch('/messages-api/conversations');
+                if (!resList.ok) return;
+                const conversations = await resList.json();
+                const container = document.getElementById('conversationsContainerList');
+
+                if (conversations.length === 0) {
+                    container.innerHTML = '<p style="text-align:center; color:#667781; font-size:13.5px; margin-top:20px;">Aucune discussion active.</p>';
+                    return;
+                }
+
+                container.innerHTML = conversations.map(c => {
+                    const avatar = c.contact_avatar || "https://flaticon.com";
+                    const activeClass = c.contact_id === currentActiveContactId ? 'active' : '';
+                    const badgeHtml = c.unread_count > 0 ? `<span class="unread-badge">${c.unread_count}</span>` : '';
+                    const msgTime = c.last_message_time ? new Date(c.last_message_time).toLocaleTimeString('fr-FR', {hour: '2-digit', minute:'2-digit'}) : '';
+
+                    return `
+                        <div class="chat-item ${activeClass}" onclick="selectActiveConversation(${c.contact_id}, '${c.contact_name}', '${avatar}')">
+                            <img src="${avatar}" class="contact-avatar" alt="Avatar">
+                            <div class="chat-item-info">
+                                <div class="chat-item-top">
+                                    <strong class="contact-name">${c.contact_name}</strong>
+                                    <span class="chat-time">${msgTime}</span>
+                                </div>
+                                <div class="chat-item-bottom">
+                                    <p class="last-msg-preview">${c.last_message || 'Message...'}</p>
+                                    ${badgeHtml}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            } catch (err) { console.error("Erreur liste discussions :", err); }
+        }
+
+
+        // 2. ACTIVER LE CHAT SÉLECTIONNÉ AU CLIC
+        async function selectActiveConversation(contactId, fullname, avatarUrl) {
+            currentActiveContactId = contactId;
+            
+            document.getElementById('chatEmptyStateScreen').style.display = 'none';
+            document.getElementById('activeChatName').innerText = fullname;
+            document.getElementById('activeChatAvatar').src = avatarUrl;
+
+            await renderChatHistory();
+            fetchMyConversations(); // Rafraîchit instantanément pour effacer la bulle verte non lue
+        }
+
+        // 3. APSECT TECHNIQUE : EXTRAIRE LES MESSAGES ÉCHANGÉS D'UN AMI
+        async function renderChatHistory() {
+            if (!currentActiveContactId) return;
+
+            try {
+                const response = await fetch(`/messages-api/history/${currentActiveContactId}`);
+                if (!response.ok) return;
+                const messages = await response.json();
+                const logStream = document.getElementById('chatMessagesLogStream');
+
+                logStream.innerHTML = messages.map(m => {
+                    const sideClass = m.sender_id === currentActiveContactId ? 'received' : 'sent';
+                    const timeText = new Date(m.created_at).toLocaleTimeString('fr-FR', {hour: '2-digit', minute:'2-digit'});
+                    
+                    return `
+                        <div class="bubble-wrapper ${sideClass}">
+                            <div class="chat-bubble">
+                                ${m.message}
+                                <span class="bubble-time">${timeText}</span>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+                logStream.scrollTop = logStream.scrollHeight; // Force le défilement en bas automatique
+            } catch (err) { console.error("Erreur historique chat :", err); }
+        }
+
+        // 4. CAPTURE DE LA BARRE D'ENVOI AU CLIC ENTRÉE OU SUR LA FLÈCHE
+        document.getElementById('chatMessageSendingForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (!currentActiveContactId) return;
+
+            const input = document.getElementById('chatTypedInput');
+            const message = input.value.trim();
+            if (!message) return;
+
+            try {
+                const response = await fetch('/messages-api/send', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ receiverId: currentActiveContactId, message })
+                });
+
+                if (response.ok) {
+                    input.value = '';
+                    await renderChatHistory();
+                    fetchMyConversations();
+                }
+            } catch (err) { console.error("Erreur envoi message :", err); }
+        });
+
+                // ⏱️ ALGORITHME DE CALCUL DE PRÉSENCE STYLE WHATSAPP
+        function formatLastSeen(lastSeenDate) {
+            if (!lastSeenDate) return "Hors ligne";
+            
+            const now = new Date();
+            const lastSeen = new Date(lastSeenDate);
+            const diffMs = now - lastSeen;
+            const diffMins = Math.floor(diffMs / 1000 / 60);
+
+            // 1. Si l'activité date de moins de 2 minutes, la personne est considérée "En ligne"
+            if (diffMins < 2) {
+                return `<span style="color: #0f766e; font-weight: 700;">en ligne</span>`;
+            }
+
+            // 2. Calcul en minutes
+            if (diffMins < 60) {
+                return `en ligne il y a ${diffMins} min`;
+            }
+
+            // 3. Calcul en heures
+            const diffHours = Math.floor(diffMins / 60);
+            if (diffHours < 24) {
+                return `en ligne il y a ${diffHours} ${diffHours > 1 ? 'heures' : 'heure'}`;
+            }
+
+            // 4. Calcul en jours
+            const diffDays = Math.floor(diffHours / 24);
+            return `en ligne il y a ${diffDays} ${diffDays > 1 ? 'jours' : 'jour'}`;
+        }
+
+        // Mettre à jour le bandeau de présence de l'ami sélectionné en direct
+        async function updateActiveContactStatus() {
+            if (!currentActiveContactId) return;
+            try {
+                // Interrege le serveur pour avoir les données fraîches de l'ami cliqué
+                const response = await fetch(`/auth/public-users/${currentActiveContactId}`);
+                if (response.ok) {
+                    let u = await response.json();
+                    if (Array.isArray(u)) u = u[0];
+                    
+                    const statusField = document.getElementById('activeChatStatus');
+                    if (statusField && u) {
+                        statusField.innerHTML = formatLastSeen(u.last_seen);
+                    }
+                }
+            } catch (err) { console.error("Erreur mise à jour statut présence :", err); }
+        }
+
+        // Ajouter cette ligne à l'intérieur de votre boucle de rechargement automatique (tout en bas du script) :
+        // setInterval(() => { ... updateActiveContactStatus(); }, 3000);
+
+
+                // ⏱️ ALGORITHME DE CALCUL DE PRÉSENCE STYLE WHATSAPP
+        function formatLastSeen(lastSeenDate) {
+            if (!lastSeenDate) return "Hors ligne";
+            
+            const now = new Date();
+            const lastSeen = new Date(lastSeenDate);
+            const diffMs = now - lastSeen;
+            const diffMins = Math.floor(diffMs / 1000 / 60);
+
+            // 1. Moins de 2 minutes d'inactivité = la personne est connectée en direct
+            if (diffMins < 2) {
+                return `<span style="color: #0f766e; font-weight: 700;">en ligne</span>`;
+            }
+
+            // 2. Moins d'une heure
+            if (diffMins < 60) {
+                return `en ligne il y a ${diffMins} min`;
+            }
+
+            // 3. Moins d'un jour
+            const diffHours = Math.floor(diffMins / 60);
+            if (diffHours < 24) {
+                return `en ligne il y a ${diffHours} ${diffHours > 1 ? 'heures' : 'heure'}`;
+            }
+
+            // 4. Au-delà d'un jour
+            const diffDays = Math.floor(diffHours / 24);
+            return `en ligne il y a ${diffDays} ${diffDays > 1 ? 'jours' : 'jour'}`;
+        }
+
+        // INTERROGER LE SERVEUR POUR OBTENIR LE STATUT DE L'AMI ACTIF
+        async function updateActiveContactStatus() {
+            if (!currentActiveContactId) return;
+            try {
+                const response = await fetch(`/auth/public-users/${currentActiveContactId}`);
+                if (response.ok) {
+                    const u = await response.json();
+                    const statusField = document.getElementById('activeChatStatus');
+                    
+                    if (statusField && u) {
+                        statusField.innerHTML = formatLastSeen(u.last_seen);
+                    }
+                }
+            } catch (err) { 
+                console.error("Erreur mise à jour statut présence :", err); 
+            }
+        }
+
+                // Lancement du radar automatique de rechargement en arrière-plan (Simule le temps réel)
+        window.addEventListener('DOMContentLoaded', () => {
+            fetchMyConversations();
+            
+            // Boucle magique de rafraîchissement WhatsApp
+            setInterval(() => {
+                fetchMyConversations(); // Actualise la liste de gauche
+                
+                if (currentActiveContactId) {
+                    renderChatHistory();         // Actualise les bulles de messages à droite
+                    updateActiveContactStatus(); // 🔥 Actualise le bandeau "en ligne" en direct !
+                }
+            }, 3000);
+        });
+
+    </script>
+</body>
+</html>
