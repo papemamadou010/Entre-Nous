@@ -13,6 +13,13 @@ const messageRoutes = require('./routes/messageRoutes');
 // 🛠️ SCRIPT AUTOMATIQUE DE MISE À NIVEAU DE LA BASE DE DONNÉES (AVATAR + BIO + POSTS + LIKES)
 db.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar_url LONGTEXT NULL")
   .then(() => db.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS bio TEXT NULL"))
+    .then(() => db.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS birthdate DATE NULL"))
+  .then(() => db.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS gender VARCHAR(50) NULL"))
+  .then(() => db.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS relationship_status VARCHAR(100) NULL"))
+  .then(() => db.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS workplace VARCHAR(255) NULL"))
+  .then(() => db.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS education_university VARCHAR(255) NULL"))
+  .then(() => db.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS education_highschool VARCHAR(255) NULL"))
+
   .then(() => db.execute("ALTER TABLE users MODIFY COLUMN avatar_url LONGTEXT NULL"))
   .then(() => db.execute("ALTER TABLE posts ADD COLUMN IF NOT EXISTS image_url LONGTEXT NULL"))
   .then(() => db.execute(`

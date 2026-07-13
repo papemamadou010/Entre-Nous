@@ -141,3 +141,64 @@ exports.getRelationStatus = async (req, res) => {
         res.status(500).send("Erreur statut");
     }
 };
+// 6. CALCULER LE COMPTE ET RECHERCHER LES AMIS EN COMMUN (REQUÊTE BI-DIRECTIONNELLE CORRIGÉE)
+exports.getMutualFriends = async (req, res) => {
+    try {
+        if (!req.session || !req.session.userId) return res.status(401).send("Non connecté");
+        const currentUserId = req.session.userId;
+        const { targetUserId } = req.params;
+
+        // A. Correction du compteur total : On compte si le membre est demandeur OU receveur
+        const countTotalQuery = `
+            SELECT COUNT(*) AS total_friends FROM friendships 
+            WHERE status = 'accepted' AND (requester_id = ? OR receiver_id = ?)
+        `;
+        const [[{ total_friends }]] = await db.execute(countTotalQuery, [targetUserId, targetUserId]);
+
+        // B. Extraire la liste des identifiants des amis de l'utilisateur connecté (Moi)
+        const [myFriendsRows] = await db.execute(
+            `SELECT IF(requester_id = ?, receiver_id, requester_id) AS friend_id 
+             FROM friendships WHERE status = 'accepted' AND (requester_id = ? OR receiver_id = ?)`,
+            [currentUserId, currentUserId, currentUserId]
+        );
+        const myFriendsIds = myFriendsRows.map(row => row.friend_id);
+
+        // C. Extraire la liste des identifiants des amis du profil visité (Cible)
+        const [targetFriendsRows] = await db.execute(
+            `SELECT IF(requester_id = ?, receiver_id, requester_id) AS friend_id 
+             FROM friendships WHERE status = 'accepted' AND (requester_id = ? OR receiver_id = ?)`,
+            [targetUserId, targetUserId, targetUserId]
+        );
+        const targetFriendsIds = targetFriendsRows.map(row => row.friend_id);
+
+        // D. Trouver l'intersection (les identifiants présents dans les deux listes)
+        const mutualIds = myFriendsIds.filter(id => targetFriendsIds.includes(id) && id !== currentUserId && id !== Number(targetUserId));
+
+        // E. Si aucun ami en commun, on renvoie une liste vide rapidement
+        if (mutualIds.length === 0) {
+            return res.json({
+                totalFriends: total_friends,
+                mutualCount: 0,
+                mutualList: []
+            });
+        }
+
+        // F. Récupérer les noms et avatars des amis en commun trouvés
+        const placeholders = mutualIds.map(() => '?').join(',');
+        const mutualQuery = `
+            SELECT id, fullname, avatar_url FROM users 
+            WHERE id IN (${placeholders}) 
+            ORDER BY fullname ASC
+        `;
+        const [mutualFriends] = await db.execute(mutualQuery, mutualIds);
+
+        res.json({
+            totalFriends: total_friends,
+            mutualCount: mutualFriends.length,
+            mutualList: mutualFriends
+        });
+    } catch (error) {
+        console.error("❌ Erreur calcul amis en commun :", error.message);
+        res.status(500).send("Erreur lors du calcul des relations");
+    }
+};

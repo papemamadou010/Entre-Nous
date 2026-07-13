@@ -45,4 +45,44 @@ router.get('/public-users/:id', authController.getPublicProfile);
 // Route publique pour la recherche d'amis inscrits
 router.get('/search', authController.searchUsers);
 
+// 👤 ROUTE DE MISE À JOUR DU PROFIL ENRICHI STYLE FACEBOOK
+router.put('/update-profile', async (req, res) => {
+    try {
+        if (!req.session || !req.session.userId) {
+            return res.status(401).send("Non connecté");
+        }
+
+        // On attrape toutes les nouvelles cases envoyées par le profil
+        const { 
+            bio, phone, address, 
+            birthdate, gender, relationship_status, 
+            workplace, education_university, education_highschool 
+        } = req.body;
+        
+        const userId = req.session.userId;
+
+        // On enregistre tout d'un coup au bon endroit dans MySQL
+        const query = `
+            UPDATE users 
+            SET bio = ?, phone = ?, address = ?, 
+                birthdate = ?, gender = ?, relationship_status = ?, 
+                workplace = ?, education_university = ?, education_highschool = ? 
+            WHERE id = ?
+        `;
+        
+        await db.execute(query, [
+            bio || null, phone || null, address || null, 
+            birthdate || null, gender || null, relationship_status || null, 
+            workplace || null, education_university || null, education_highschool || null, 
+            userId
+        ]);
+
+        res.status(200).send("Profil complet mis à jour dans MySQL avec succès !");
+    } catch (error) {
+        console.error("❌ Erreur lors du UPDATE profile complet :", error);
+        res.status(500).send("Erreur serveur lors de la mise à jour");
+    }
+});
+
+
 module.exports = router;

@@ -5,6 +5,69 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>EntreNous - Mon Profil</title>
     <style>
+                /* =================================================================
+           🛡️ CORRECTIF CHIRURGICAL D'ÉCRASEMENT DES DOUBLONS & DES CARRÉS
+           ================================================================= */
+        
+        /* 1. Force le masquage du texte "en commun" exclusivement sur VOTRE profil (Pape) */
+        #mutualCountText[style*="display: none"], 
+        #mutualCountText[style*="display: none"] + *,
+        #socialSeparator[style*="display: none"] {
+            display: none !important;
+        }
+
+        /* 2. Métamorphose absolue des carrés noirs du bas en larges cartes de l'accueil */
+        #userPostsGrid, .user-posts-grid {
+            display: flex !important;
+            flex-direction: column !important;
+            gap: 20px !important;
+            width: 100% !important;
+        }
+
+        /* Écrase le style des carrés noirs pour les transformer en cartes blanches aérées */
+        #userPostsGrid .grid-post-card, 
+        .user-posts-grid .grid-post-card,
+        .grid-post-card {
+            display: block !important;
+            width: 100% !important;
+            height: auto !important; /* Retire la hauteur fixe des carrés noirs */
+            background: #ffffff !important;
+            border: 1px solid #e2e8f0 !important;
+            border-radius: 16px !important;
+            padding: 24px !important;
+            box-shadow: 0 4px 20px -2px rgba(15, 118, 110, 0.02) !important;
+            box-sizing: border-box !important;
+        }
+
+        /* Recalibrage des images dans les publications du profil */
+        #userPostsGrid .grid-post-img, .grid-post-img {
+            width: 100% !important;
+            max-height: 450px !important;
+            object-fit: contain !important;
+            border-radius: 12px !important;
+            margin-top: 12px !important;
+        }
+
+                /* 🟥 FORCE LE RETOUR DES CARTES HORIZONTALES (EFFACE LES CARRÉS NOIRS) */
+        #userPostsGrid, .user-posts-grid {
+            display: flex !important;
+            flex-direction: column !important;
+            gap: 20px !important;
+            width: 100% !important;
+        }
+        
+        /* Redonne aux publications de votre profil le look de cartes de l'accueil */
+        #userPostsGrid .grid-post-card, #userPostsGrid .post-card {
+            display: block !important;
+            background: #ffffff !important;
+            border: 1px solid #e2e8f0 !important;
+            border-radius: 16px !important;
+            padding: 20px !important;
+            box-shadow: 0 4px 20px -2px rgba(15, 118, 110, 0.02) !important;
+            width: 100% !important;
+            box-sizing: border-box !important;
+        }
+
 
                 /* =================================================================
            🎨 HARMONISATION GRAPHIQUE GLOBALE - THÈME VERT SAUGE (PROFIL)
@@ -383,15 +446,19 @@
             justify-content: center;
         }
 
+        /* CORRECTION MODALE : TAILLE MAXIMUM ET DEFILEMENT INTERNE CONVIVIAL */
         .modal-content {
-            background-color: #ffffff;
-            border-radius: 16px;
-            width: 100%;
-            max-width: 440px;
-            padding: 30px;
-            box-sizing: border-box;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            background: white !important;
+            padding: 25px !important;
+            border-radius: 16px !important;
+            width: 100% !important;
+            max-width: 460px !important; /* Largeur confortable */
+            max-height: 85vh !important; /* Évite de dépasser la hauteur de l'écran */
+            overflow-y: auto !important; /* Active le défilement vertical uniquement si nécessaire */
+            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1) !important;
+            box-sizing: border-box !important;
         }
+
 
         .modal-content h3 {
             margin: 0 0 20px 0;
@@ -536,6 +603,82 @@
             cursor: pointer;
         }
 
+                /* =================================================================
+           🎨 EXTENSION DE STYLE - DISPOSITION 2 COLONNES (SANS IMPACT)
+           ================================================================= */
+        
+        /* Ajustement de la boîte du haut pour accueillir les compteurs */
+        .profile-social-counters { 
+            display: flex !important; 
+            align-items: center !important; 
+            gap: 12px !important; 
+            font-size: 13.5px !important; 
+            color: #475569 !important; 
+            font-weight: 600 !important; 
+            margin-top: 6px;
+        }
+        .mutual-avatars-row { 
+            display: inline-flex !important; 
+            align-items: center !important; 
+            flex-direction: row-reverse !important; 
+            margin-right: 4px !important; 
+        }
+        .mutual-mini-avatar {
+            width: 24px !important; 
+            height: 24px !important; 
+            border-radius: 50% !important; 
+            object-fit: cover !important;
+            border: 2px solid #ffffff !important; 
+            margin-left: -8px !important; 
+            background: #cbd5e1 !important;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05) !important;
+        }
+
+        /* Création de la structure en 2 colonnes asymétriques pour le bas */
+        .profile-bottom-layout { 
+            display: flex !important; 
+            gap: 24px !important; 
+            margin-top: 24px !important; 
+            align-items: flex-start !important; 
+        }
+        
+        /* Volet gauche pour les infos personnelles */
+        .profile-info-sidebar {
+            width: 330px !important; 
+            background: #ffffff !important; 
+            border: 1px solid #f1f0ec !important;
+            border-radius: 20px !important; 
+            padding: 24px !important; 
+            box-shadow: 0 10px 35px -5px rgba(27, 38, 59, 0.03) !important;
+            display: flex !important; 
+            flex-direction: column !important; 
+            gap: 16px !important; 
+            box-sizing: border-box !important;
+        }
+        .info-sidebar-title { 
+            font-size: 16px !important; 
+            font-weight: 800 !important; 
+            color: #1e293b !important; 
+            margin: 0 0 4px 0 !important; 
+        }
+        .info-sidebar-item { 
+            display: flex !important; 
+            align-items: center !important; 
+            gap: 12px !important; 
+            font-size: 14px !important; 
+            color: #334155 !important; 
+            font-weight: 600 !important; 
+        }
+        
+        /* Flux de droite pour accueillir les publications en cartes entières */
+        .profile-posts-stream { 
+            flex: 1 !important; 
+            display: flex !important; 
+            flex-direction: column !important; 
+            gap: 20px !important; 
+        }
+
+
     </style>
 </head>
 <body>
@@ -567,48 +710,131 @@
             </div>
         </aside>
 
-        <!-- ================= COLONNE DROITE : BLOC PROFIL COMPLET ================= -->
-        <section class="profile-content-area">
+               <!-- ================= COLONNE DROITE : BLOC PROFIL COMPLET RECONSTRUIT ================= -->
+        <section class="profile-content-area" style="flex: 1; display: flex; flex-direction: column;">
             
-            <!-- Carte principale d'en-tête du profil -->
-            <div class="profile-header-card">
-                <!-- Zone d'avatar composite avec gestionnaire de clic masqué -->
-                <div class="avatar-container" onclick="document.getElementById('avatarUploadInput').click()">
-                    <img src="https://flaticon.com" alt="Avatar" class="profile-avatar" id="profileAvatarImg">
-                    <div class="avatar-overlay">
+            <!-- Carte principale d'en-tête du profil (Zonage Haut) -->
+            <div class="profile-header-card" style="display: flex; align-items: center; gap: 30px; background: white; border: 1px solid #e2e8f0; border-radius: 20px; padding: 30px; box-shadow: 0 4px 20px rgba(0,0,0,0.01);">
+                <!-- Zone d'avatar composite avec gestionnaire de clic masqué d'origine -->
+                <div class="avatar-container" id="avatarContainer" onclick="document.getElementById('avatarUploadInput').click()" style="position: relative; width: 120px; height: 120px; cursor: pointer;">
+                    <img src="https://flaticon.com" alt="Avatar" class="profile-avatar" id="profileAvatarImg" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">
+                    <div class="avatar-overlay" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); border-radius: 50%; display: none; flex-direction: column; align-items: center; justify-content: center; color: white; font-size: 12px;">
                         <span>📷</span>
-                        <span style="margin-top: 5px;">Changer la photo</span>
+                        <span style="margin-top: 5px;">Changer</span>
                     </div>
                     <input type="file" id="avatarUploadInput" accept="image/*" style="display: none;">
                 </div>
 
-                <!-- Informations textuelles de l'utilisateur de la session -->
-                <div class="profile-info-block">
-                    <div class="username-row">
-                        <h2 id="profileFullname">Chargement...</h2>
+                                <!-- Informations textuelles épurées de l'utilisateur (NETTOYÉ ET SANS DOUBLON) -->
+                <div class="profile-info-block" style="flex: 1;">
+                    <div class="username-row" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                        <h2 id="profileFullname" style="margin: 0; font-size: 24px; font-weight: 800; color: #1e293b;">Chargement...</h2>
                         <button class="edit-profile-btn" onclick="openProfileModal()">Modifier le profil</button>
                     </div>
-                    <p class="bio-text" id="profileBio">Aucune biographie rédigée pour le moment. Cliquez sur modifier pour vous présenter à la communauté !</p>
-                    <div class="meta-details">
-                        <span id="profilePhone">📞 Non renseigné</span>
-                        <span id="profileAddress">📍 Non renseigné</span>
+                    <p class="bio-text" id="profileBio" style="margin: 0 0 12px 0; font-size: 14.5px; color: #64748b; line-height: 1.5;">Aucune biographie rédigée pour le moment.</p>
+                    
+                    <!-- 👥 UNE SEULE ET UNIQUE LIGNE DE COMPTEURS POUR LA BASE DE DONNÉES -->
+                    <div class="profile-social-counters" style="display: flex; align-items: center; gap: 10px; font-size: 13.5px; color: #475569; font-weight: 600; margin-top: 6px;">
+                        <span id="friendsCountText">0 ami</span>
+                        <span id="socialSeparator" style="color:#cbd5e1;">•</span>
+                        <div class="mutual-avatars-row" id="mutualAvatarsContainer" style="display: inline-flex; align-items: center; flex-direction: row-reverse;"></div>
+                        <span id="mutualCountText" style="color:#0f766e;">0 en commun</span>
+                    </div>
+                </div>
+
+
+                    <!-- 👥 COMPTEURS SOCIAUX ET BULLS FACEBOOK MINIATURES -->
+                    <div class="profile-social-counters" style="display: flex; align-items: center; gap: 10px; font-size: 13.5px; color: #475569; font-weight: 600;">
+                        <span id="friendsCountText">0 ami</span>
+                        <span style="color:#cbd5e1;">•</span>
+                        <div class="mutual-avatars-row" id="mutualAvatarsContainer" style="display: inline-flex; align-items: center; flex-direction: row-reverse;"></div>
+                        <span id="mutualCountText" style="color:#0f766e;">0 en commun</span>
                     </div>
                 </div>
             </div>
 
-            <!-- Onglet de séparation de section -->
-            <div class="tabs-separator">
-                <div class="tab-item">📋 Mes Publications</div>
-            </div>
+            <!-- Balises invisibles de secours pour éviter que vos anciens scripts ne plantent si cachés -->
+            <span id="profilePhone" style="display:none;"></span>
+            <span id="profileAddress" style="display:none;"></span>
 
-            <!-- Grille d'affichage des publications personnelles -->
-            <div class="user-posts-grid" id="userPostsGrid">
-                <div class="grid-post-card" style="grid-column: 1 / -1; text-align: center; padding: 40px; background: white; border-radius: 12px; border: 1px solid #e2e8f0;">
-                    <p style="color: #64748b;">Aucune publication partagée pour l'instant.</p>
+            <!-- ================= DISPOSITION DES 2 ZONES HORIZONTALES (Zonage Bas) ================= -->
+            <div class="profile-bottom-layout" style="display: flex; gap: 24px; margin-top: 24px; align-items: flex-start; width: 100%;">
+                
+                <!-- ⬅️ BLOC DONNÉES PERSONNELLES VERROUILLABLE -->
+                <aside class="profile-info-sidebar" id="profileInfoSidebar" style="width: 280px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.01); display: flex; flex-direction: column; gap: 14px; box-sizing: border-box;">
+                    <h4 class="info-sidebar-title" style="margin: 0 0 4px 0; font-size: 15px; font-weight: 800; color: #1e293b; text-transform: uppercase; letter-spacing: 0.5px;">Données personnelles</h4>
+                    
+                                   <!-- Zone 🔓 : Une seule liste propre sans aucun doublon -->
+                <div id="privateInfoContent" style="display: flex; flex-direction: column; gap: 14px; width: 100%;">
+                    <div class="info-sidebar-item">
+                        <span>📍</span> Habite à : <strong id="profileSidebarAddress">...</strong>
+                    </div>
+                    <div class="info-sidebar-item">
+                        <span>📞</span> Téléphone : <strong id="profileSidebarPhone">...</strong>
+                    </div>
+                    <div class="info-sidebar-item">
+                        <span>📅</span> Né(e) le : <strong id="profileSidebarBirthdate">...</strong>
+                    </div>
+                    <div class="info-sidebar-item">
+                        <span>🧬</span> Sexe : <strong id="profileSidebarGender">...</strong>
+                    </div>
+                    <div class="info-sidebar-item">
+                        <span>❤️</span> Situation : <strong id="profileSidebarRelationship">...</strong>
+                    </div>
+                    <div class="info-sidebar-item">
+                        <span>💼</span> Travaille à : <strong id="profileSidebarWorkplace">...</strong>
+                    </div>
+                    <div class="info-sidebar-item">
+                        <span>🎓</span> Études : <strong id="profileSidebarUniversity">...</strong>
+                    </div>
+                    <div class="info-sidebar-item">
+                        <span>🏫</span> Lycée : <strong id="profileSidebarHighschool">...</strong>
+                    </div>
                 </div>
+
+                    
+                    <!-- Zone 🔒 : Affichée uniquement si inconnu -->
+                    <div id="lockedInfoMessage" style="display: none; text-align: center; padding: 12px 5px; color: #64748b; font-size: 13px; line-height: 1.4; font-weight: 500; background: #f8fafc; border-radius: 8px; border: 1px dashed #cbd5e1;">
+                        🔒 Les coordonnées privées sont réservées aux amis acceptés.
+                    </div>
+                                    <!-- Zone 🔓 : Affichée pour vous-même ou pour vos amis validés -->
+                <div id="privateInfoContent" style="display: flex; flex-direction: column; gap: 14px; width: 100%;">
+                    <div class="info-sidebar-item">
+                        <span>📍</span> Habite à : <strong id="profileSidebarAddress">...</strong>
+                    </div>
+                    <div class="info-sidebar-item">
+                        <span>📞</span> Téléphone : <strong id="profileSidebarPhone">...</strong>
+                    </div>
+                    <!-- NOUVELLES LIGNES DE PROFIL ENRICHI -->
+                    <div class="info-sidebar-item">
+                        <span>📅</span> Né(e) le : <strong id="profileSidebarBirthdate">...</strong>
+                    </div>
+                    <div class="info-sidebar-item">
+                        <span>🧬</span> Sexe : <strong id="profileSidebarGender">...</strong>
+                    </div>
+                    <div class="info-sidebar-item">
+                        <span>❤️</span> Situation : <strong id="profileSidebarRelationship">...</strong>
+                    </div>
+                    <div class="info-sidebar-item">
+                        <span>💼</span> Travaille à : <strong id="profileSidebarWorkplace">...</strong>
+                    </div>
+                    <div class="info-sidebar-item">
+                        <span>🎓</span> Études : <strong id="profileSidebarUniversity">...</strong>
+                    </div>
+                    <div class="info-sidebar-item">
+                        <span>🏫</span> Lycée : <strong id="profileSidebarHighschool">...</strong>
+                    </div>
+                </div>
+
+                </aside>
+
+                <!-- 🟥 JOURNAL DES PUBLICATIONS EN CARTES ENTIÈRES (REMPLACE L'ANCIENNE GRILLE) -->
+                <section id="userPostsGrid" class="profile-posts-stream" style="flex: 1; display: flex; flex-direction: column; gap: 20px; min-width: 0;"></section>
+
             </div>
 
         </section>
+
     </main>
 
     <!-- BOÎTE MODALE DE MODIFICATION DU PROFIL -->
@@ -628,10 +854,40 @@
                     <label for="editAddress">VILLE DE RÉSIDENCE</label>
                     <input type="text" id="editAddress" placeholder="Ex: Dakar, Thiès...">
                 </div>
+                                <!-- ================= CASES SUPPLÉMENTAIRES COMPLÉMENTAIRES STYLE FACEBOOK ================= -->
+                <div class="modal-form-group">
+                    <label for="editBirthdate">DATE DE NAISSANCE</label>
+                    <input type="date" id="editBirthdate">
+                </div>
+                <div class="modal-form-group">
+                    <label for="editGender">GENRE / SEXE</label>
+                    <select id="editGender" style="padding: 10px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px; outline: none; background: white;">
+                        <option value="">Sélectionner...</option>
+                        <option value="Homme">Homme</option>
+                        <option value="Femme">Femme</option>
+                    </select>
+                </div>
+                <div class="modal-form-group">
+                    <label for="editRelationship">SITUATION MATRIMONIALE</label>
+                    <input type="text" id="editRelationship" placeholder="Ex: Célibataire, En couple, Marié(e)...">
+                </div>
+                <div class="modal-form-group">
+                    <label for="editWorkplace">LIEU DE TRAVAIL / POSTE</label>
+                    <input type="text" id="editWorkplace" placeholder="Ex: Développeur chez TechDakar...">
+                </div>
+                <div class="modal-form-group">
+                    <label for="editUniversity">UNIVERSITÉ / ÉTUDES SUPÉRIEURES</label>
+                    <input type="text" id="editUniversity" placeholder="Ex: Étudiant à l'UCAD / ESP...">
+                </div>
+                <div class="modal-form-group">
+                    <label for="editHighschool">LYCÉE D'ORIGINE</label>
+                    <input type="text" id="editHighschool" placeholder="Ex: Ancien élève du Lycée Blaise Diagne...">
+                </div>
                 <div class="modal-actions">
                     <button type="button" class="btn-cancel" onclick="closeProfileModal()">Annuler</button>
                     <button type="submit" class="btn-save">Enregistrer</button>
                 </div>
+
             </form>
         </div>
     </div>
@@ -805,32 +1061,49 @@
             reader.readAsDataURL(file);
         });
 
-        // 4. SOUCOUPAGE ET SAUVEGARDE DES INFORMATIONS TEXTUELLES
+                // FORMULAIRE D'ÉDITION SÉCURISÉ STYLE FACEBOOK AVEC EXTRACTION COMPLÈTE
         document.getElementById('editProfileForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-
+            
+            // Capture de l'intégralité des champs de saisie
             const bio = document.getElementById('editBio').value;
             const phone = document.getElementById('editPhone').value;
             const address = document.getElementById('editAddress').value;
+            const birthdate = document.getElementById('editBirthdate').value;
+            const gender = document.getElementById('editGender').value;
+            const relationship_status = document.getElementById('editRelationship').value;
+            const workplace = document.getElementById('editWorkplace').value;
+            const education_university = document.getElementById('editUniversity').value;
+            const education_highschool = document.getElementById('editHighschool').value;
 
             try {
-                const response = await fetch('/auth/update-profile', {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ bio, phone, address })
+                const response = await fetch('/auth/update-profile', { 
+                    method: 'PUT', 
+                    headers: { 'Content-Type': 'application/json' }, 
+                    body: JSON.stringify({ 
+                        bio, phone, address, 
+                        birthdate, gender, relationship_status, 
+                        workplace, education_university, education_highschool 
+                    }) 
                 });
 
                 if (response.ok) {
-                    alert("Profil mis à jour avec succès !");
+                    alert("🎉 Profil professionnel Facebook mis à jour avec succès !");
                     closeProfileModal();
-                    fetchUserProfileData();
+                    
+                    // Force la re-synchronisation instantanée de l'écran global
+                    if (typeof fetchUserProfileData === 'function') await fetchUserProfileData();
                 } else {
-                    alert("Erreur lors de la mise à jour des informations.");
+                    alert("Erreur lors de l'enregistrement des informations.");
                 }
             } catch (err) {
-                console.error("Erreur lors de la mise à jour du profil :", err);
+                console.error("Erreur réseau formulaire complet :", err);
+                alert("Impossible de joindre le serveur pour sauvegarder.");
             }
         });
+
+
+
         // =================================================================
         // 5. CHARGEMENT DYNAMIQUE DES PUBLICATIONS DU PROFIL (FILTRÉ BY ID)
         // =================================================================
@@ -1020,14 +1293,189 @@
             }
         }
 
+                // =================================================================
+        // 📡 COMPLÉMENT RELATIONNEL : RADAR COMPTEURS & AMIS EN COMMUN
+                // 2. LOGIQUE COMPTEURS D'AMIS ET COMPOSANT MINIATURES (CORRIGÉ POUR LES AUTRES PROFILS)
+        async function loadFriendsCounters(targetUserId, showMutual) {
+            try {
+                const response = await fetch(`/friends/mutual/${targetUserId}`);
+                if (response.ok) {
+                    const resData = await response.json();
+                    
+                    // On met à jour TOUS les compteurs d'amis trouvés dans la page (anti-doublon)
+                    const friendsTexts = document.querySelectorAll('#friendsCountText');
+                    friendsTexts.forEach(el => {
+                        el.innerText = `${resData.totalFriends} ${resData.totalFriends > 1 ? 'amis' : 'ami'}`;
+                    });
+                    
+                    const mutualTexts = document.querySelectorAll('#mutualCountText');
+                    const separators = document.querySelectorAll('#socialSeparator');
+                    const avatarsContainers = document.querySelectorAll('#mutualAvatarsContainer');
+                    
+                    if (showMutual) {
+                        // Profil tiers : On allume et on affiche les vrais chiffres de MySQL
+                        mutualTexts.forEach(el => {
+                            el.innerText = `${resData.mutualCount} en commun`;
+                            el.style.setProperty('display', 'inline', 'important');
+                        });
+                        separators.forEach(el => el.style.setProperty('display', 'inline', 'important'));
+                        avatarsContainers.forEach(el => {
+                            el.style.setProperty('display', 'inline-flex', 'important');
+                            el.innerHTML = resData.mutualList.slice(0, 3).map(f => {
+                                const url = f.avatar_url || "https://flaticon.com";
+                                return `<img src="${url}" class="mutual-mini-avatar" title="${f.fullname}">`;
+                            }).join('');
+                        });
+                    } else {
+                        // Mon profil : On éteint tout
+                        mutualTexts.forEach(el => el.style.setProperty('display', 'none', 'important'));
+                        separators.forEach(el => el.style.setProperty('display', 'none', 'important'));
+                        avatarsContainers.forEach(el => { el.innerHTML = ''; el.style.setProperty('display', 'none', 'important'); });
+                    }
+                }
+            } catch (err) { console.error("Erreur compteurs :", err); }
+        }
 
-        // =================================================================
-        // DÉCLENCHEMENT INITIAL SYNCHRONISÉ ET SÉQUENTIEL
-        // =================================================================
-        window.addEventListener('DOMContentLoaded', async () => {
+
+
+        // Actions de clic pour envoyer et accepter les demandes d'amis depuis le profil
+        async function sendRequest(receiverId) {
+            try {
+                const response = await fetch('/friends/request', { 
+                    method: 'POST', 
+                    headers: { 'Content-Type': 'application/json' }, 
+                    body: JSON.stringify({ receiverId }) 
+                });
+                if (response.ok) {
+                    alert("Demande d'ami envoyée avec succès !");
+                    fetchUserProfileData(); // Rafraîchit le bouton
+                }
+            } catch (err) { console.error("Erreur envoi demande :", err); }
+        }
+
+        async function acceptDirectRequest(requesterId, fullname) {
+            try {
+                const response = await fetch('/friends/respond', { 
+                    method: 'POST', 
+                    headers: { 'Content-Type': 'application/json' }, 
+                    body: JSON.stringify({ requesterId, action: 'accepted' }) 
+                });
+                if (response.ok) {
+                    alert(`Vous êtes désormais ami avec ${fullname} !`);
+                    fetchUserProfileData(); // Débloque le chat et le cadenas
+                    if (typeof loadMyPosts === 'function') loadMyPosts(); // Recharge le journal
+                }
+            } catch (err) { console.error("Erreur acceptation :", err); }
+        }
+
+
+                       window.addEventListener('DOMContentLoaded', async () => {
+            // Exécution de vos fonctions d'origine
             await fetchUserProfileData();
             await loadMyPosts();
+
+            // =============================================================
+            // 🛡️ RE-SYNCHRONISATION ET CALCUL DIRECTIONNEL DES COMPTEURS
+            // =============================================================
+            setTimeout(async () => {
+                const urlParams = new URLSearchParams(window.location.search);
+                let targetUserId = urlParams.get('id');
+
+                // 1. Nettoyage absolu du doublon flottant à droite
+                const allCounterBlocks = document.querySelectorAll('.profile-social-counters');
+                if (allCounterBlocks.length > 1) {
+                    for (let i = 1; i < allCounterBlocks.length; i++) {
+                        allCounterBlocks[i].remove();
+                    }
+                }
+
+                // 2. Si targetUserId est vide, on récupère l'ID de la session de Pape
+                if (!targetUserId) {
+                    try {
+                        const sessionRes = await fetch('/auth/me');
+                        if (sessionRes.ok) {
+                            const sessionData = await sessionRes.json();
+                            // Si c'est un tableau, on prend le premier élément
+                            const myData = Array.isArray(sessionData) ? sessionData[0] : sessionData;
+                            if (myData && myData.id) {
+                                targetUserId = myData.id;
+                            }
+                        }
+                    } catch (err) {
+                        console.error("Erreur lecture session pour compteurs :", err);
+                    }
+                }
+
+                // 3. Lancement de la requête MySQL avec le bon ID trouvé
+                if (targetUserId) {
+                    try {
+                        const response = await fetch(`/friends/mutual/${targetUserId}`);
+                        if (response.ok) {
+                            const resData = await response.json();
+                            
+                            const friendsText = document.getElementById('friendsCountText');
+                            const mutualText = document.getElementById('mutualCountText');
+                            const separator = document.getElementById('socialSeparator');
+                            const avatarsContainer = document.getElementById('mutualAvatarsContainer');
+
+                            // Affichage du vrai nombre total d'amis calculé par MySQL
+                            if (friendsText) {
+                                friendsText.innerText = `${resData.totalFriends} ${resData.totalFriends > 1 ? 'amis' : 'ami'}`;
+                            }
+
+                            // Gestion de l'affichage selon le profil (Moi ou Tiers)
+                            if (urlParams.get('id')) {
+                                // Profil d'un autre : On montre le en commun
+                                if (mutualText) {
+                                    mutualText.innerText = `${resData.mutualCount} en commun`;
+                                    mutualText.style.setProperty('display', 'inline', 'important');
+                                }
+                                if (separator) separator.style.setProperty('display', 'inline', 'important');
+                                
+                                if (avatarsContainer && resData.mutualList && resData.mutualList.length > 0) {
+                                    avatarsContainer.style.setProperty('display', 'inline-flex', 'important');
+                                    avatarsContainer.innerHTML = resData.mutualList.slice(0, 3).map(f => {
+                                        const url = f.avatar_url || "https://flaticon.com";
+                                        return `<img src="${url}" class="mutual-mini-avatar" title="${f.fullname}" style="width:24px; height:24px; border-radius:50%; border:2px solid white; margin-left:-8px; object-fit:cover;">`;
+                                    }).join('');
+                                }
+                            } else {
+                                // Mon propre profil : On cache le en commun définitivement
+                                if (mutualText) mutualText.style.setProperty('display', 'none', 'important');
+                                if (separator) separator.style.setProperty('display', 'none', 'important');
+                                if (avatarsContainer) avatarsContainer.style.setProperty('display', 'none', 'important');
+                            }
+                        }
+                    } catch (err) {
+                        console.error("Erreur force compteurs :", err);
+                    }
+                }
+                // =============================================================
+// 🛡️ RE-SYNCHRONISATION ET AFFICHAGE DES CHAMPS STYLE FACEBOOK
+// =============================================================
+if (typeof data !== 'undefined' && data) {
+    const u = data; // On utilise la vraie variable 'data' de votre serveur
+    
+    // Remplissage chirurgical sans crash
+    const elBirth = document.getElementById('profileSidebarBirthdate');
+    const elGend = document.getElementById('profileSidebarGender');
+    const elRel = document.getElementById('profileSidebarRelationship');
+    const elWork = document.getElementById('profileSidebarWorkplace');
+    const elUniv = document.getElementById('profileSidebarUniversity');
+    const elHigh = document.getElementById('profileSidebarHighschool');
+
+    if (elBirth) elBirth.innerText = u.birthdate ? new Date(u.birthdate).toLocaleDateString('fr-FR') : "Non renseigné";
+    if (elGend) elGend.innerText = u.gender || "Non renseigné";
+    if (elRel) elRel.innerText = u.relationship_status || "Non renseigné";
+    if (elWork) elWork.innerText = u.workplace || "Non renseigné";
+    if (elUniv) elUniv.innerText = u.education_university || "Non renseigné";
+    if (elHigh) elHigh.innerText = u.education_highschool || "Non restriction";
+}
+
+            }, 400);
         });
+
+
     </script>
 </body>
 </html>
