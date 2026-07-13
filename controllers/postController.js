@@ -76,7 +76,7 @@ exports.getUserPosts = async (req, res) => {
     }
 };
 
-// 4. GESTION DU BOUTON LIKE (VÉRIFIE L'EXISTENCE ET INTERDIT LES DOUBLONS)
+// 4. GESTION DU BOUTON LIKE (AVEC DÉCLENCHEUR DE NOTIFICATION UNIQUEMENT SI NOUVEAU LIKE)
 exports.toggleLike = async (req, res) => {
     try {
         if (!req.session || !req.session.userId) {
@@ -86,19 +86,50 @@ exports.toggleLike = async (req, res) => {
         const userId = req.session.userId;
         const { postId } = req.params;
 
-        // 1. On cherche si cet utilisateur a déjà aimé cette publication precisa
+        // 1. On cherche si cet utilisateur a déjà aime cette publication precisa
         const checkQuery = 'SELECT id FROM likes WHERE user_id = ? AND post_id = ?';
         const [existingLike] = await db.execute(checkQuery, [userId, postId]);
 
         if (existingLike.length > 0) {
-            // L'utilisateur a déjà aimé -> Action inverse : ON RETIRE LE LIKE
+            // L'utilisateur a déjà aime -> Action inverse : ON RETIRE LE LIKE
             const deleteQuery = 'DELETE FROM likes WHERE user_id = ? AND post_id = ?';
             await db.execute(deleteQuery, [userId, postId]);
             return res.json({ liked: false, message: "Like retiré" });
         } else {
-            // L'utilisateur n'a pas encore aimé -> ON RECONNAÎT LE LIKE
+            // L'utilisateur n'a pas encore aime -> ON RECONNAÎT LE LIKE
             const insertQuery = 'INSERT INTO likes (user_id, post_id) VALUES (?, ?)';
             await db.execute(insertQuery, [userId, postId]);
+
+            // 🔔 DÉCLENCHEUR DE NOTIFICATION AUTOMATIQUE : NOUVEAU LIKE
+            try {
+                // On récupère le créateur de la publication originale
+                const [postOwnerRows] = await db.execute('SELECT user_id FROM posts WHERE id = ?', [postId]);
+                
+                if (postOwnerRows.length > 0) {
+                    const postOwnerId = postOwnerRows[0].user_id;
+
+                    // Sécurité : On ne s'envoie pas de notification à soi-même !
+                    if (Number(postOwnerId) !== Number(userId)) {
+                        // Récupérer le nom de la personne qui a liké (Moi)
+                        const [likerRows] = await db.execute('SELECT fullname FROM users WHERE id = ?', [userId]);
+                        const likerName = likerRows[0]?.fullname || "Quelqu'un";
+
+                        const notifQuery = `
+                            INSERT INTO notifications (user_id, sender_id, type, post_id, message) 
+                            VALUES (?, ?, 'like', ?, ?)
+                        `;
+                        await db.execute(notifQuery, [
+                            postOwnerId, // Celui qui possède le post et reçoit la notification
+                            userId,      // Vous (le déclencheur)
+                            postId,
+                            `❤️ ${likerName} a aimé votre publication.`
+                        ]);
+                    }
+                }
+            } catch (notifErr) {
+                console.error("❌ Erreur silencieuse notification Like :", notifErr.message);
+            }
+
             return res.json({ liked: true, message: "Publication aimée" });
         }
     } catch (error) {
@@ -107,7 +138,7 @@ exports.toggleLike = async (req, res) => {
     }
 };
 
-// 5. AJOUTER UN COMMENTAIRE SUR UNE PUBLICATION
+// 5. AJOUTER UN COMMENTAIRE SUR UNE PUBLICATION (AVEC DÉCLENCHEUR DE NOTIFICATION)
 exports.addComment = async (req, res) => {
     try {
         if (!req.session || !req.session.userId) {
@@ -122,8 +153,39 @@ exports.addComment = async (req, res) => {
             return res.status(400).send("Le commentaire ne peut pas être vide.");
         }
 
+        // A. Insertion stricte du commentaire dans MySQL
         const query = 'INSERT INTO comments (content, user_id, post_id, created_at) VALUES (?, ?, ?, NOW())';
         await db.execute(query, [content, userId, postId]);
+
+        // 🔔 B. DÉCLENCHEUR DE NOTIFICATION AUTOMATIQUE : NOUVEAU COMMENTAIRE
+        try {
+            // On récupère le créateur de la publication originale
+            const [postOwnerRows] = await db.execute('SELECT user_id FROM posts WHERE id = ?', [postId]);
+            
+            if (postOwnerRows.length > 0) {
+                const postOwnerId = postOwnerRows[0].user_id;
+
+                // Sécurité : On ne s'envoie pas de notification si on commente son propre post !
+                if (Number(postOwnerId) !== Number(userId)) {
+                    // Récupérer le nom de la personne qui commente (Moi)
+                    const [commenterRows] = await db.execute('SELECT fullname FROM users WHERE id = ?', [userId]);
+                    const commenterName = commenterRows[0]?.fullname || "Quelqu'un";
+
+                    const notifQuery = `
+                        INSERT INTO notifications (user_id, sender_id, type, post_id, message) 
+                        VALUES (?, ?, 'comment', ?, ?)
+                    `;
+                    await db.execute(notifQuery, [
+                        postOwnerId, // Celui qui possède le post et reçoit la notification
+                        userId,      // Vous (le déclencheur)
+                        postId,
+                        `💬 ${commenterName} a commenté votre publication.`
+                    ]);
+                }
+            }
+        } catch (notifErr) {
+            console.error("❌ Erreur silencieuse notification Commentaire :", notifErr.message);
+        }
 
         res.status(201).send("Commentaire ajouté avec succès !");
     } catch (error) {
@@ -131,6 +193,7 @@ exports.addComment = async (req, res) => {
         res.status(500).send("Erreur lors de l'ajout du commentaire : " + error.message);
     }
 };
+
 
 // 6. RÉCUPÉRER LES COMMENTAIRES D'UNE PUBLICATION SPÉCIFIQUE
 exports.getComments = async (req, res) => {

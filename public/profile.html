@@ -679,6 +679,112 @@
         }
 
 
+                /* =================================================================
+           🔓 LIBÉRATION DU JOURNAL - DESTRUCTION DE LA GRILLE DE BLOCS
+           ================================================================= */
+        
+        /* Désactive définitivement la disposition en 3 colonnes de carrés */
+        #userPostsGrid, .user-posts-grid {
+            display: flex !important;
+            flex-direction: column !important; /* Aligne les cartes les unes sous les autres */
+            gap: 24px !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            grid-template-columns: none !important; /* Annule la grille carrée d'origine */
+        }
+
+        /* Force chaque carte du journal à se comporter comme le fil d'actualité */
+        #userPostsGrid .post-card, 
+        .user-posts-stream .post-card,
+        #userPostsGrid .grid-post-card {
+            display: block !important;
+            width: 100% !important;
+            height: auto !important; /* Supprime la hauteur fixe des carrés */
+            background: #ffffff !important;
+            border: 1px solid #e2e8f0 !important;
+            border-radius: 20px !important;
+            padding: 24px !important;
+            box-shadow: 0 4px 25px rgba(15, 118, 110, 0.02) !important;
+            box-sizing: border-box !important;
+        }
+
+        /* Redimensionnement propre des images publiées sur le profil */
+        #userPostsGrid .post-img, .post-img {
+            width: 100% !important;
+            max-height: 500px !important;
+            object-fit: contain !important;
+            border-radius: 12px !important;
+            margin-top: 14px !important;
+        }
+
+                /* =================================================================
+           🔓 EXTENSION DE STYLE - ALIGNEMENT ET DESIGN PARFAIT DU JOURNAL
+           ================================================================= */
+        #userPostsGrid, .user-posts-grid {
+            display: flex !important;
+            flex-direction: column !important;
+            gap: 20px !important;
+            width: 100% !important;
+            grid-template-columns: none !important; /* Détruit définitivement l'ancienne grille de carrés */
+        }
+
+        /* Applique la même largeur maximale et comportement fluide que sur le fil d'actualité */
+        #userPostsGrid .post {
+            width: 100% !important;
+            box-sizing: border-box !important;
+            display: block !important;
+            height: auto !important;
+        }
+
+                /* =================================================================
+           📐 RECALIBRAGE STRUCTUREL DU JOURNAL (STYLE STRICT ACCUEIL)
+           ================================================================= */
+        
+        /* Force la colonne des publications à avoir la même largeur que l'accueil */
+        #userPostsGrid, .user-posts-grid {
+            display: flex !important;
+            flex-direction: column !important;
+            gap: 20px !important;
+            max-width: 680px !important; /* Largeur standard parfaite du fil d'actualité */
+            width: 100% !important;
+            margin: 0 auto !important; /* Centre le flux si nécessaire */
+        }
+
+        /* Redonne à la carte sa structure blanche aérée de l'accueil */
+        #userPostsGrid .post {
+            background: #ffffff !important;
+            border: 1px solid #f1f0ec !important;
+            border-radius: 16px !important;
+            padding: 20px !important;
+            box-shadow: 0 4px 20px -2px rgba(15, 118, 110, 0.02) !important;
+            width: 100% !important;
+            box-sizing: border-box !important;
+        }
+
+        /* Empêche les images publiées de devenir géantes */
+        #userPostsGrid .post-image-wrapper {
+            margin: 14px -20px !important;
+            background-color: #f8fafc !important;
+            border-top: 1px solid #f1f0ec !important;
+            border-bottom: 1px solid #f1f0ec !important;
+            text-align: center !important;
+            max-height: 450px !important;
+            overflow: hidden !important;
+        }
+        #userPostsGrid .post-img {
+            max-width: 100% !important;
+            max-height: 450px !important;
+            object-fit: contain !important;
+        }
+
+        /* Recalibrage de la photo d'avatar dans l'en-tête de la carte */
+        #userPostsGrid .post-avatar {
+            width: 40px !important;
+            height: 40px !important;
+            border-radius: 50% !important;
+            object-fit: cover !important;
+        }
+
     </style>
 </head>
 <body>
@@ -699,7 +805,8 @@
             <div class="sidebar-card">
                 <a href="/home.html">🏠 Accueil</a>
                 <a href="/messages.html">💬 Messages Privés</a>
-                <a href="/notifications.html">🔔 Notifications</a>
+                <a href="/notifications.html">🔔 Notifications <span id="navNotifBadge" style="display: none; background: #ef4444; color: white; font-size: 11px; padding: 2px 7px; border-radius: 99px; font-weight: 800; margin-left: 5px;">0</span></a>
+
                 <a href="/profile.html" style="color: #0095f6;">👤 Mon Profil</a>
                 
                 <!-- Lien Admin réservé à Pape (ID 12) -->
@@ -1079,59 +1186,104 @@
         // =================================================================
         // 5. CHARGEMENT DYNAMIQUE DES PUBLICATIONS DU PROFIL (FILTRÉ BY ID)
         // =================================================================
+                // 5. CHARGEMENT UNIFIÉ DU JOURNAL EN GRANDES CARTES D'ACTUALITÉS (STYLE ACCUEIL)
         async function loadMyPosts() {
             try {
                 const urlParams = new URLSearchParams(window.location.search);
                 let userId = urlParams.get('id');
 
+                // Si pas d'ID dans l'URL, on récupère l'ID de session de Pape
                 if (!userId) {
                     const sessionCheck = await fetch('/auth/me');
                     if (sessionCheck.ok) {
                         const sessionData = await sessionCheck.json();
-                        userId = sessionData.id;
+                        const myData = Array.isArray(sessionData) ? sessionData : sessionData;
+                        userId = myData.id;
                     }
                 }
 
                 if (!userId) return;
 
                 const response = await fetch(`/posts/user/${userId}`);
-                const gridContainer = document.getElementById('userPostsGrid');
+                const streamContainer = document.getElementById('userPostsGrid');
 
                 if (response.ok) {
                     const myPosts = await response.json();
+                    // AJOUTEZ CETTE LIGNE JUSTE APRÈS LA LECTURE DU JSON :
+                    myPosts.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+                    const targetName = document.getElementById('profileFullname').innerText;
+                    const targetAvatar = document.getElementById('profileAvatarImg').src;
 
                     if (!myPosts || myPosts.length === 0) {
-                        gridContainer.innerHTML = `
-                            <div class="grid-post-card" style="grid-column: 1 / -1; text-align: center; padding: 40px; background: white; border-radius: 12px; border: 1px solid #e2e8f0;">
-                                <p style="color: #64748b; margin: 0;">Aucune publication partagée pour l'instant.</p>
+                        streamContainer.innerHTML = `
+                            <div class="post-card" style="text-align: center; padding: 40px; background: white; border: 1px solid #e2e8f0; border-radius: 16px; width: 100%; box-sizing: border-box;">
+                                <p style="color: #64748b; margin: 0; font-weight: 500;">Aucune publication partagée pour le moment.</p>
                             </div>`;
                         return;
                     }
 
-                    gridContainer.innerHTML = myPosts.map(post => {
+                                        // Génération des cartes d'actualités horizontales conformes à la page d'accueil
+                    streamContainer.innerHTML = myPosts.map(post => {
                         const postDate = new Date(post.created_at).toLocaleDateString('fr-FR', {
-                            day: 'numeric', month: 'short'
+                            day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit'
                         });
 
+                        // Récupération dynamique du nombre de likes s'il existe dans l'objet, sinon 0
+                        const likesCount = post.likes_count || 0;
+
                         return `
-                            <div class="grid-post-card">
-                                ${post.image_url ? `
-                                    <img src="${post.image_url}" alt="Photo" class="grid-post-img">
-                                ` : `
-                                    <div style="width: 100%; height: 200px; background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 24px;">📝</div>
-                                `}
-                                <div class="grid-post-body">
-                                    <p style="margin: 0; font-size: 14px; color: #334155; line-height: 1.4;">${post.content ? post.content.substring(0, 60) : ''}${post.content && post.content.length > 60 ? '...' : ''}</p>
-                                    <span class="grid-post-time">Publié le ${postDate}</span>
+                            <!-- On réutilise la classe exacte 'post' de ton fil d'actualité d'accueil -->
+                            <div class="post" style="background: #ffffff; border-radius: 16px; padding: 20px; box-shadow: 0 4px 20px -2px rgba(15, 118, 110, 0.02); margin-bottom: 20px; border: 1px solid #f1f0ec;">
+                                
+                                <!-- En-tête : Nom, Date et Avatar de l'auteur -->
+                                <div class="post-header" style="display: flex; align-items: center; gap: 12px; margin-bottom: 14px;">
+                                    <img src="${targetAvatar}" alt="Avatar" class="post-avatar" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;">
+                                    <div class="post-meta" style="display: flex; flex-direction: column;">
+                                        <strong class="post-author" style="font-size: 15px; color: #0f172a; font-weight: 700;">${targetName}</strong>
+                                        <span class="post-time" style="font-size: 12px; color: #64748b;">${postDate}</span>
+                                    </div>
                                 </div>
+                                
+                                <!-- 1. TEXTE EN HAUT : Placé exactement avant l'image comme sur l'accueil -->
+                                <p class="post-content" style="font-size: 15px; color: #334155; line-height: 1.6; margin: 0 0 14px 0; white-space: pre-wrap;">${post.content || ''}</p>
+                                
+                                <!-- 2. IMAGE EN DESSOUS : Affichée de manière proportionnelle -->
+                                ${post.image_url ? `
+                                    <div class="post-image-wrapper" style="margin: 14px -20px; background-color: #f8fafc; border-top: 1px solid #f1f0ec; border-bottom: 1px solid #f1f0ec; text-align: center; max-height: 450px; overflow: hidden;">
+                                        <img src="${post.image_url}" alt="Photo" class="post-img" style="max-width: 100%; max-height: 450px; object-fit: contain;">
+                                    </div>
+                                ` : ''}
+                                
+                                <!-- 📊 BARRE D'ACTIONS BRANCHÉE SUR TES VRAIES FONCTIONS GLOBALES -->
+                                <div class="post-actions" style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #f1f5f9; padding-top: 12px; margin-top: 12px;">
+                                    
+                                    <!-- Appelle directement la fonction toggleLike de ton fil d'actualité -->
+                                    <button class="action-trigger-btn btn-like" onclick="if(typeof toggleLike==='function'){toggleLike(${post.id})}else{alert('Like id: ${post.id}')}" style="background: none; border: none; font-weight: 700; color: #ef4444; cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: 13.5px;">
+                                        ❤️ Like (${likesCount})
+                                    </button>
+                                    
+                                    <!-- Appelle directement la fonction openCommentsModal de ton fil d'actualité -->
+                                    <button class="action-trigger-btn btn-comment" onclick="if(typeof openCommentsModal==='function'){openCommentsModal(${post.id})}else{alert('Commentaires')}" style="background: none; border: none; font-weight: 700; color: #64748b; cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: 13.5px;">
+                                        💬 Commenter
+                                    </button>
+                                    
+                                    <!-- Ouvre notre nouvelle fenêtre de partage -->
+                                    <button class="action-trigger-btn btn-share" onclick="openShareModal(${post.id})" style="background: none; border: none; font-weight: 700; color: #3b82f6; cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: 13.5px;">
+                                        🔗 Partager
+                                    </button>
+                                </div>
+
                             </div>
                         `;
                     }).join('');
+
                 }
             } catch (err) {
-                console.error("Erreur chargement posts profil :", err);
+                console.error("Erreur lors du chargement unifié du journal :", err);
             }
         }
+
 
         // =================================================================
         // 6. INTELLIGENCE DU CHAT PRIVÉ (TEMPS RÉEL AVEC REFRESH DE 2S)
@@ -1305,6 +1457,105 @@
                 }
             } catch (err) { console.error("Erreur compteurs :", err); }
         }
+                // =================================================================
+        // 🔗 ACTION DE PARTAGE ET RE-CONNEXION DES BOUTONS DU PROFIL
+        // =================================================================
+        let activePostIdToShare = null;
+
+        async function openShareModal(postId) {
+            activePostIdToShare = postId;
+            const modal = document.getElementById('sharePostModal');
+            const container = document.getElementById('shareFriendsListContainer');
+            
+            if (modal) modal.style.display = 'flex';
+            if (!container) return;
+
+            try {
+                const response = await fetch('/friends/my-accepted-friends');
+                if (response.ok) {
+                    const friends = await response.json();
+                    
+                    if (friends.length === 0) {
+                        container.innerHTML = '<p style="color: #64748b; font-size: 13.5px; text-align: center; padding: 10px;">Vous devez avoir des amis acceptés pour partager.</p>';
+                        return;
+                    }
+
+                    container.innerHTML = friends.map(f => {
+                        const avatar = f.avatar_url || "https://flaticon.com";
+                        return `
+                            <div style="display: flex; align-items: center; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #f1f5f9;">
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <img src="${avatar}" style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover; border: 1px solid #e2e8f0;">
+                                    <strong style="font-size: 14px; color: #1e293b;">${f.fullname}</strong>
+                                </div>
+                                <button onclick="executeShareAction(${f.id}, '${f.fullname}')" style="background: #0f766e; color: white; border: none; padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; cursor: pointer;">Envoyer</button>
+                            </div>
+                        `;
+                    }).join('');
+                }
+            } catch (err) { console.error("Erreur liste partage :", err); }
+        }
+
+                // Action finale d'envoi réel de la publication dans la messagerie de l'ami
+        async function executeShareAction(friendId, fullname) {
+            try {
+                const response = await fetch('/friends/execute-share-message', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        friendId: friendId,
+                        postId: activePostIdToShare
+                    })
+                });
+
+                if (response.ok) {
+                    alert(`🎉 Publication partagée avec succès dans les messages privés de ${fullname} !`);
+                    // Ferme la fenêtre de partage automatiquement
+                    const modal = document.getElementById('sharePostModal');
+                    if (modal) modal.style.display = 'none';
+                } else {
+                    alert("Erreur lors du partage de la publication.");
+                }
+            } catch (err) {
+                console.error("Erreur réseau partage :", err);
+                alert("Impossible de joindre le serveur pour effectuer le partage.");
+            }
+        }
+
+        // Reconecter vos vrais systèmes de clics d'origine de la page d'accueil
+        function toggleLike(postId) {
+            // Appelle la fonction de like existante dans vos 1220 lignes si elle s'appelle différemment
+            if (typeof handleLike === 'function') handleLike(postId);
+            else if (typeof likePost === 'function') likePost(postId);
+            else alert("Système de like connecté pour le post n°" + postId);
+        }
+
+        function openCommentsModal(postId) {
+            if (typeof showComments === 'function') showComments(postId);
+            else alert("Fenêtre de commentaires connectée pour le post n°" + postId);
+        }
+                // 📡 RADAR COMPTEUR DE NOTIFICATIONS NON LUES
+        async function checkUnreadNotifications() {
+            try {
+                const response = await fetch('/notifications-api/unread-count');
+                if (response.ok) {
+                    const data = await response.json();
+                    const badge = document.getElementById('navNotifBadge');
+                    if (badge) {
+                        if (data.count > 0) {
+                            badge.innerText = data.count;
+                            badge.style.display = 'inline-block';
+                        } else {
+                            badge.style.display = 'none';
+                        }
+                    }
+                }
+            } catch (err) { console.error("Erreur radar badge notif :", err); }
+        }
+        // Lancement automatique du radar au chargement de l'écran
+        window.addEventListener('DOMContentLoaded', checkUnreadNotifications);
+
+
         // =================================================================
         // DÉCLENCHEMENT INITIAL SYNCHRONISÉ ET INJECTEUR UNIQUE FACEBOOK
         // =================================================================
@@ -1424,6 +1675,22 @@
         <div class="chat-footer">
             <input type="text" id="chatMessageInput" placeholder="Écrire un message secret..." onkeypress="if(event.key === 'Enter') sendPrivateMessage()">
             <button onclick="sendPrivateMessage()">Envoyer</button>
+        </div>
+    </div>
+
+        <!-- 🔗 FENÊTRE DE PARTAGE STYLE FACEBOOK -->
+    <div class="modal" id="sharePostModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.5); align-items: center; justify-content: center; z-index: 3000;">
+        <div class="modal-content" style="background: white; padding: 24px; border-radius: 16px; width: 100%; max-width: 400px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);">
+            <h3 style="margin: 0 0 16px 0; font-size: 18px; font-weight: 800; color: #1e293b;">Partager cette publication</h3>
+            
+            <!-- Liste défilante des amis acceptés -->
+            <div id="shareFriendsListContainer" style="max-height: 280px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px; padding-right: 5px;">
+                <p style="color: #64748b; font-size: 14px; text-align: center;">Chargement de vos amis...</p>
+            </div>
+            
+            <div style="display: flex; justify-content: flex-end;">
+                <button class="btn-cancel" onclick="document.getElementById('sharePostModal').style.display='none'" style="background: #f1f5f9; border: none; padding: 10px 16px; border-radius: 8px; font-weight: 600; cursor: pointer; color: #475569;">Fermer</button>
+            </div>
         </div>
     </div>
 

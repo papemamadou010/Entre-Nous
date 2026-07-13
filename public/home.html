@@ -600,6 +600,63 @@
         #navbarAvatarImg { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; }
         #userBadge { font-size: 14px; font-weight: 600; color: #334155; }
 
+                /* =================================================================
+           🔗 BARRE D'ACTIONS PREMIUM (J'AIME GAUCHE | COMMENTER MILIEU | PARTAGER DROITE)
+           ================================================================= */
+        .post-actions {
+            display: flex !important;
+            justify-content: space-between !important; /* Calcule l'espace parfait entre les 3 blocs */
+            align-items: center !important;
+            border-top: 1px solid #f1f5f9 !important;
+            padding-top: 12px !important;
+            margin-top: 12px !important;
+            width: 100% !important;
+        }
+        .action-trigger-btn {
+            background: #f8fafc !important;
+            border: none !important;
+            padding: 8px 18px !important;
+            border-radius: 20px !important;
+            font-weight: 700 !important;
+            color: #64748b !important;
+            cursor: pointer !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            gap: 8px !important;
+            transition: all 0.2s !important;
+            font-size: 13.5px !important;
+            flex: 1 !important;
+            max-width: 30% !important; /* Équilibre parfait de largeur pour chaque bouton */
+            justify-content: center !important;
+        }
+        /* Effets de survol élégants */
+        .action-trigger-btn.btn-like:hover { background: #fee2e2 !important; color: #ef4444 !important; }
+        .action-trigger-btn.btn-comment:hover { background: #ecfdf5 !important; color: #10b981 !important; }
+        .action-trigger-btn.btn-share:hover { background: #eff6ff !important; color: #3b82f6 !important; }
+
+
+                /* 📊 ALIGNEMENT STRICT : J'AIME GAUCHE | COMMENTER MILIEU | PARTAGER DROITE */
+        .post-actions {
+            display: flex !important;
+            justify-content: space-between !important;
+            align-items: center !important;
+            border-top: 1px solid #f1f5f9 !important;
+            padding-top: 12px !important;
+            margin-top: 12px !important;
+            width: 100% !important;
+        }
+        .action-trigger-btn {
+            background: none !important;
+            border: none !important;
+            font-weight: 700 !important;
+            cursor: pointer !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            gap: 6px !important;
+            font-size: 13.5px !important;
+            padding: 6px 12px !important;
+        }
+
     </style>
 </head>
 <body>
@@ -650,7 +707,8 @@
                 <!-- NOUVEAU : BOUTON AMIS -->
                 <a href="javascript:void(0)" class="sidebar-item" onclick="openFriendsListModal()">👥 Mes Amis</a>
                 
-                <a href="#" class="sidebar-item">🔔 Notifications</a>
+                <a href="/notifications.html">🔔 Notifications <span id="navNotifBadge" style="display: none; background: #ef4444; color: white; font-size: 11px; padding: 2px 7px; border-radius: 99px; font-weight: 800; margin-left: 5px;">0</span></a>
+
                 <a href="/profile.html" class="sidebar-item">👤 Mon Profil</a>
                 <!-- VÉRIFIEZ CETTE LIGNE DANS VOTRE SIDEBAR -->
 <a href="/admin/dashboard.html" id="adminLink" class="sidebar-item" style="display: none; color: #ef4444; font-weight: 700;">🛠️ Espace Admin</a>

@@ -1,6 +1,6 @@
 const db = require('../config/db');
 
-// 1. ENVOYER UN MESSAGE PRIVÉ (SÉCURISÉ PAR L'AMITIÉ)
+// 1. ENVOYER UN MESSAGE PRIVÉ (SÉCURISÉ PAR L'AMITIÉ + DÉCLENCHEUR DE NOTIFICATION)
 exports.sendPrivateMessage = async (req, res) => {
     try {
         if (!req.session || !req.session.userId) {
@@ -24,8 +24,29 @@ exports.sendPrivateMessage = async (req, res) => {
             return res.status(400).send("Le message ne peut pas être vide.");
         }
 
+        // A. Enregistrement du message privé dans MySQL
         const query = 'INSERT INTO private_messages (sender_id, receiver_id, message) VALUES (?, ?, ?)';
         await db.execute(query, [senderId, receiverId, message]);
+
+        // 🔔 B. DÉCLENCHEUR DE NOTIFICATION AUTOMATIQUE : NOUVEAU MESSAGE PRIVÉ
+        try {
+            // Récupérer le nom de l'expéditeur (Moi) pour personnaliser l'alerte d'Aminata/Aliou
+            const [senderRows] = await db.execute('SELECT fullname FROM users WHERE id = ?', [senderId]);
+            const senderName = senderRows[0]?.fullname || "Un membre";
+
+            const notifQuery = `
+                INSERT INTO notifications (user_id, sender_id, type, message) 
+                VALUES (?, ?, 'message', ?)
+            `;
+            await db.execute(notifQuery, [
+                receiverId, // Le destinataire qui reçoit la notification
+                senderId,   // Vous (l'expéditeur)
+                `✉️ ${senderName} vous a envoyé un message privé.`
+            ]);
+        } catch (notifErr) {
+            // Sécurité : Si la notification échoue, on n'empêche pas le message de s'envoyer
+            console.error("❌ Erreur silencieuse déclencheur notification message :", notifErr.message);
+        }
 
         res.status(201).send("Message envoyé !");
     } catch (error) {
@@ -33,6 +54,7 @@ exports.sendPrivateMessage = async (req, res) => {
         res.status(500).send("Erreur serveur lors de l'envoi du message : " + error.message);
     }
 };
+
 
 // 2. RÉCUPÉRER L'HISTORIQUE DE DISCUSSION ENTRE DEUX UTILISATEURS (SÉCURISÉ PAR L'AMITIÉ)
 exports.getChatHistory = async (req, res) => {

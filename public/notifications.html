@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EntreNous - Notifications</title>
+    <style>
+        @import url('https://googleapis.com');
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif !important;
+            background-color: #fbfaf8 !important;
+            color: #1e293b !important;
+            margin: 0; padding-top: 88px;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .navbar {
+            display: flex; align-items: center; justify-content: space-between;
+            position: fixed; top: 0; left: 0; width: 100%; height: 68px;
+            background-color: #ffffff; border-bottom: 1px solid #f1f0ec;
+            padding: 0 32px; box-sizing: border-box; z-index: 2000;
+        }
+        .navbar h1 { font-size: 22px; font-weight: 800; color: #0f766e; margin: 0; cursor: pointer; }
+
+        .main-layout { display: flex; max-width: 935px; margin: 0 auto; padding: 0 24px; gap: 24px; box-sizing: border-box; }
+        
+        /* Menu gauche fictionnel conservé */
+        .left-column { width: 240px; shrink: 0; }
+        .sidebar-card {
+            background: white; border: 1px solid #f1f0ec; border-radius: 16px; padding: 20px;
+            display: flex; flex-direction: column; gap: 14px; box-shadow: 0 4px 20px rgba(0,0,0,0.01);
+        }
+        .sidebar-card a { text-decoration: none; color: #475569; font-weight: 600; font-size: 14.5px; display: flex; align-items: center; }
+        .sidebar-card a:hover { color: #0f766e; }
+
+        /* Colonne de flux centrale */
+        .notif-content-area { flex: 1; display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+        .notif-title-card { background: white; border: 1px solid #f1f0ec; border-radius: 16px; padding: 20px; display: flex; justify-content: space-between; align-items: center; }
+        .notif-title-card h2 { margin: 0; font-size: 18px; font-weight: 800; color: #0f172a; }
+
+        /* Cartes d'alertes style Facebook */
+        .notif-card {
+            background: white; border: 1px solid #f1f0ec; border-radius: 16px; padding: 16px 20px;
+            display: flex; align-items: center; justify-content: space-between; gap: 14px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.01); transition: all 0.2s ease; cursor: pointer;
+        }
+        .notif-card.unread { background: #f0fdfa; border-left: 4px solid #0f766e; } /* Couleur d'alerte non lue */
+        .notif-card:hover { transform: translateY(-1px); box-shadow: 0 6px 24px rgba(0,0,0,0.02); }
+        
+        .notif-left { display: flex; align-items: center; gap: 14px; flex: 1; }
+        .notif-avatar { width: 44px; height: 44px; border-radius: 50%; object-fit: cover; border: 1px solid #e2e8f0; }
+        .notif-body { display: flex; flex-direction: column; gap: 3px; }
+        .notif-message { font-size: 14.5px; color: #1e293b; font-weight: 500; margin: 0; line-height: 1.4; }
+        .notif-time { font-size: 12px; color: #64748b; }
+
+        .notif-action-btn {
+            background: #0f766e; color: white; border: none; padding: 8px 16px;
+            border-radius: 20px; font-size: 12.5px; font-weight: 700; cursor: pointer;
+        }
+        .notif-action-btn:hover { background: #115e59; }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar"><h1 onclick="window.location.href='/home.html'">EntreNous</h1></nav>
+
+    <main class="main-layout">
+
+        <section class="notif-content-area">
+            <div class="notif-title-card">
+                <h2>Vos Notifications</h2>
+            </div>
+            
+            <!-- Conteneur dynamique des alertes -->
+            <div id="notificationsListStream" style="display: flex; flex-direction: column; gap: 12px; width: 100%;">
+                <div style="text-align: center; padding: 40px; color: #64748b;">Chargement des alertes...</div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        // 📡 CHARGEMENT ET RENDU EN DIRECT DES NOTIFICATIONS MYSQL
+        async function loadAllNotifications() {
+            try {
+                const response = await fetch('/notifications-api');
+                const streamContainer = document.getElementById('notificationsListStream');
+                
+                if (response.ok && streamContainer) {
+                    const data = await response.json();
+                    
+                    if (data.length === 0) {
+                        streamContainer.innerHTML = `
+                            <div style="text-align: center; padding: 40px; background: white; border-radius: 16px; border: 1px solid #f1f0ec; color: #64748b; font-weight: 500;">
+                                ✨ Aucune notification pour le moment.
+                            </div>`;
+                        return;
+                    }
+
+                    streamContainer.innerHTML = data.map(n => {
+                        const avatar = n.sender_avatar || "https://flaticon.com";
+                        const dateText = new Date(n.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+                        const unreadClass = n.is_read === 0 ? 'unread' : '';
+
+                        // Configuration de la redirection intelligente selon le type de notification
+                        let redirectionClick = `window.location.href='/home.html'`;
+                        let buttonHtml = '';
+
+                        if (n.type === 'message') {
+                            redirectionClick = `window.location.href='/messages.html'`;
+                            buttonHtml = `<button class="notif-action-btn">Répondre</button>`;
+                        } else if (n.type === 'friend_request') {
+                            redirectionClick = `window.location.href='/profile.html'`;
+                            buttonHtml = `<button class="notif-action-btn">Voir</button>`;
+                        } else if (n.type === 'like' || n.type === 'comment') {
+                            redirectionClick = `window.location.href='/profile.html'`;
+                            buttonHtml = `<button class="notif-action-btn" style="background:#f1f5f9; color:#475569;">Voir le post</button>`;
+                        }
+
+                        return `
+                            <div class="notif-card ${unreadClass}" onclick="${redirectionClick}">
+                                <div class="notif-left">
+                                    <img src="${avatar}" class="notif-avatar" alt="Auteur">
+                                    <div class="notif-body">
+                                        <p class="notif-message">${n.message}</p>
+                                        <span class="notif-time">${dateText}</span>
+                                    </div>
+                                </div>
+                                ${buttonHtml}
+                            </div>
+                        `;
+                    }).join('');
+
+                    // Une fois affichées, on envoie le signal au Backend pour toutes les marquer comme lues
+                    await fetch('/notifications-api/mark-all-read', { method: 'PUT' });
+                }
+            } catch (err) {
+                console.error("Erreur flux notifications :", err);
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', loadAllNotifications);
+    </script>
+</body>
+</html>

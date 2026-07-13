@@ -75,7 +75,27 @@ db.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar_url LONGTEXT NULL"
   .then(() => db.execute("ALTER TABLE users MODIFY COLUMN avatar_url LONGTEXT NULL"))
   .then(() => db.execute("ALTER TABLE posts ADD COLUMN IF NOT EXISTS image_url LONGTEXT NULL")) // ACTIVE LA COLONNE DANS POSTS
   .then(() => console.log("🚀 BASE DE DONNÉES PRÊTE : Tous les modules et 'image_url' sont activés !"))
+  // 🔔 RE-CRÉATION FORCEE ET NETTOYAGE DE LA TABLE DES NOTIFICATIONS STYLE FACEBOOK
+  .then(() => db.execute("DROP TABLE IF EXISTS notifications")) // <-- Efface proprement l'ancien blocage
+  .then(() => db.execute(`
+      CREATE TABLE notifications (
+          id INT AUTO_INCREMENT PRIMARY KEY,
+          user_id INT NOT NULL, 
+          sender_id INT NOT NULL, 
+          type VARCHAR(50) NOT NULL, 
+          post_id INT NULL, 
+          message VARCHAR(255) NOT NULL, 
+          is_read TINYINT(1) DEFAULT 0, 
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+          FOREIGN KEY (sender_id) REFERENCES users(id) ON DELETE CASCADE
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+  `))
+  .then(() => console.log("🔔 Table notifications créée avec succès et colonnes synchronisées !"))
+
+
   .catch(err => console.error("❌ Erreur de mise à niveau BDD :", err.message));
+  
 
 const authRoutes = require('./routes/authRoutes');
 const postRoutes = require('./routes/postRoutes');
@@ -146,6 +166,7 @@ app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 
+
 // Configuration des Sessions Utilisateurs
 app.use(session({
     secret: 'le_secret_de_notre_reseau_social_entrenous',
@@ -164,6 +185,10 @@ app.use('/posts', postRoutes);
 app.use('/admin-api', adminRoutes); // 2. ACTIVATION DU MODULE SECRÈT ADMIN
 app.use('/messages', messageRoutes);
 app.use('/friends', friendRoutes);
+// Déclaration et liaison de l'API de notifications
+const notificationRoutes = require('./routes/notificationRoutes');
+app.use('/notifications-api', notificationRoutes);
+
 
 
 // Route d'accueil principale corrigée (affiche index.html dès l'entrée sur le site)

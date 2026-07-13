@@ -1,6 +1,4 @@
-const db = require('../config/db');
-
-// 1. ENVOYER OU RE-TENTER UNE DEMANDE D'AMI
+// 1. ENVOYER OU RE-TENTER UNE DEMANDE D'AMI (AVEC DÉCLENCHEUR DE NOTIFICATION INTEGRÉ)
 exports.sendFriendRequest = async (req, res) => {
     try {
         if (!req.session || !req.session.userId) return res.status(401).send("Non connecté");
@@ -10,6 +8,10 @@ exports.sendFriendRequest = async (req, res) => {
         if (Number(requesterId) === Number(receiverId)) {
             return res.status(400).send("Vous ne pouvez pas vous ajouter vous-même.");
         }
+
+        // Récupérer le nom de la personne connectée (Moi) pour personnaliser le message d'alerte
+        const [senderRows] = await db.execute('SELECT fullname FROM users WHERE id = ?', [requesterId]);
+        const senderName = senderRows[0]?.fullname || "Un membre";
 
         // Vérifier si une relation existe déjà
         const [existing] = await db.execute(
@@ -24,16 +26,32 @@ exports.sendFriendRequest = async (req, res) => {
             
             // Si la demande précédente avait été refusée, on la relance en 'pending'
             await db.execute('UPDATE friendships SET status = "pending", requester_id = ?, receiver_id = ? WHERE id = ?', [requesterId, receiverId, rel.id]);
+            
+            // 🔔 NOTIFICATION CAS A : Insertion de l'alerte de relance
+            await db.execute(
+                'INSERT INTO notifications (user_id, sender_id, type, message) VALUES (?, ?, "friend_request", ?)',
+                [receiverId, requesterId, `👤 ${senderName} vous a renvoyé une demande d'ami.`]
+            );
+
             return res.json({ status: 'pending', message: "Demande réenvoyée !" });
         }
 
+        // Nouvelle demande
         await db.execute('INSERT INTO friendships (requester_id, receiver_id, status) VALUES (?, ?, "pending")', [requesterId, receiverId]);
+        
+        // 🔔 NOTIFICATION CAS B : Insertion de la toute première alerte
+        await db.execute(
+            'INSERT INTO notifications (user_id, sender_id, type, message) VALUES (?, ?, "friend_request", ?)',
+            [receiverId, requesterId, `👤 ${senderName} vous a envoyé une demande d'ami.`]
+        );
+
         res.status(201).json({ status: 'pending', message: "Demande d'ami envoyée !" });
     } catch (error) {
         console.error("Erreur envoi demande ami :", error);
         res.status(500).send("Erreur serveur");
     }
 };
+
 
 // 2. ACCEPTER OU REFUSER UNE DEMANDE D'AMI
 exports.respondToRequest = async (req, res) => {
