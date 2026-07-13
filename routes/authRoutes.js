@@ -16,16 +16,20 @@ router.get('/suggestions', adminController.getSuggestions);
 
 // CORRECTION CRUCIALE : Récupère TOUTES les informations en temps réel dans MySQL
 // Correction de la route /me pour renvoyer un objet JSON direct
+// CORRECTION CRUCIALE : Récupère TOUTES les informations (Y COMPRIS LES CHAMPS FACEBOOK)
 router.get('/me', async (req, res) => {
     try {
         if (req.session && req.session.userId) {
+            // AJOUT DES 6 COLONNES MANQUANTES DANS LE SELECT
             const [rows] = await db.execute(
-                'SELECT id, fullname, email, role, bio, phone, address, avatar_url FROM users WHERE id = ?', 
+                `SELECT id, fullname, email, role, bio, phone, address, avatar_url,
+                        birthdate, gender, relationship_status, workplace, 
+                        education_university, education_highschool 
+                 FROM users WHERE id = ?`, 
                 [req.session.userId]
             );
 
             if (rows.length > 0) {
-                // IMPORTANT : On extrait l'objet unique index 0 pour éviter d'envoyer un tableau
                 res.json(rows[0]); 
             } else {
                 res.status(404).send("Utilisateur introuvable");
@@ -38,6 +42,7 @@ router.get('/me', async (req, res) => {
         res.status(500).send("Erreur serveur : " + error.message);
     }
 });
+
 
 // Route publique pour voir le profil de n'importe quel membre sans blocage admin
 router.get('/public-users/:id', authController.getPublicProfile);

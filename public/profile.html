@@ -725,7 +725,7 @@
                     <input type="file" id="avatarUploadInput" accept="image/*" style="display: none;">
                 </div>
 
-                                <!-- Informations textuelles épurées de l'utilisateur (NETTOYÉ ET SANS DOUBLON) -->
+                                               <!-- Informations textuelles épurées de l'utilisateur (NETTOYÉ ET SANS DOUBLON) -->
                 <div class="profile-info-block" style="flex: 1;">
                     <div class="username-row" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
                         <h2 id="profileFullname" style="margin: 0; font-size: 24px; font-weight: 800; color: #1e293b;">Chargement...</h2>
@@ -733,7 +733,7 @@
                     </div>
                     <p class="bio-text" id="profileBio" style="margin: 0 0 12px 0; font-size: 14.5px; color: #64748b; line-height: 1.5;">Aucune biographie rédigée pour le moment.</p>
                     
-                    <!-- 👥 UNE SEULE ET UNIQUE LIGNE DE COMPTEURS POUR LA BASE DE DONNÉES -->
+                    <!-- 👥 UNE SEULE ET UNIQUE LIGNE DE COMPTEURS SOCIAUX POUR LE SCRIPT -->
                     <div class="profile-social-counters" style="display: flex; align-items: center; gap: 10px; font-size: 13.5px; color: #475569; font-weight: 600; margin-top: 6px;">
                         <span id="friendsCountText">0 ami</span>
                         <span id="socialSeparator" style="color:#cbd5e1;">•</span>
@@ -741,90 +741,60 @@
                         <span id="mutualCountText" style="color:#0f766e;">0 en commun</span>
                     </div>
                 </div>
-
-
-                    <!-- 👥 COMPTEURS SOCIAUX ET BULLS FACEBOOK MINIATURES -->
-                    <div class="profile-social-counters" style="display: flex; align-items: center; gap: 10px; font-size: 13.5px; color: #475569; font-weight: 600;">
-                        <span id="friendsCountText">0 ami</span>
-                        <span style="color:#cbd5e1;">•</span>
-                        <div class="mutual-avatars-row" id="mutualAvatarsContainer" style="display: inline-flex; align-items: center; flex-direction: row-reverse;"></div>
-                        <span id="mutualCountText" style="color:#0f766e;">0 en commun</span>
-                    </div>
-                </div>
             </div>
 
-            <!-- Balises invisibles de secours pour éviter que vos anciens scripts ne plantent si cachés -->
+            <!-- Balises invisibles de secours pour éviter les crashs d'anciens scripts cachés -->
             <span id="profilePhone" style="display:none;"></span>
             <span id="profileAddress" style="display:none;"></span>
 
-            <!-- ================= DISPOSITION DES 2 ZONES HORIZONTALES (Zonage Bas) ================= -->
+            <!-- ================= DISPOSITION DES 2 ZONES EN BAS STYLE FACEBOOK ================= -->
             <div class="profile-bottom-layout" style="display: flex; gap: 24px; margin-top: 24px; align-items: flex-start; width: 100%;">
                 
-                <!-- ⬅️ BLOC DONNÉES PERSONNELLES VERROUILLABLE -->
-                <aside class="profile-info-sidebar" id="profileInfoSidebar" style="width: 280px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.01); display: flex; flex-direction: column; gap: 14px; box-sizing: border-box;">
-                    <h4 class="info-sidebar-title" style="margin: 0 0 4px 0; font-size: 15px; font-weight: 800; color: #1e293b; text-transform: uppercase; letter-spacing: 0.5px;">Données personnelles</h4>
+                <!-- ⬅️ BLOC DONNÉES PERSONNELLES RE-CALIBRÉ AVEC LES CLASSES DU SCRIPT -->
+                <aside class="profile-info-sidebar" style="width: 280px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.01); display: flex; flex-direction: column; gap: 14px; box-sizing: border-box;">
+                    <h4 style="margin: 0 0 4px 0; font-size: 14px; font-weight: 800; color: #1e293b; text-transform: uppercase; letter-spacing: 0.5px;">Données personnelles</h4>
                     
-                                   <!-- Zone 🔓 : Une seule liste propre sans aucun doublon -->
-                <div id="privateInfoContent" style="display: flex; flex-direction: column; gap: 14px; width: 100%;">
-                    <div class="info-sidebar-item">
-                        <span>📍</span> Habite à : <strong id="profileSidebarAddress">...</strong>
+                    <!-- 🔥 Connexion directe par classes avec l'injecteur JavaScript -->
+                    <div id="fbPrivateGridContainer" style="display: flex; flex-direction: column; gap: 14px; width: 100%;">
+                        <div class="info-sidebar-item" style="display: flex; align-items: center; gap: 10px; font-size: 13.5px; color: #334155; font-weight: 600;">
+                            <span>📍</span> Habite à : <strong class="fb-field-address" style="color: #0f172a;">...</strong>
+                        </div>
+                        <div class="info-sidebar-item" style="display: flex; align-items: center; gap: 10px; font-size: 13.5px; color: #334155; font-weight: 600;">
+                            <span>📞</span> Téléphone : <strong class="fb-field-phone" style="color: #0f172a;">...</strong>
+                        </div>
+                        <div class="info-sidebar-item" style="display: flex; align-items: center; gap: 10px; font-size: 13.5px; color: #334155; font-weight: 600;">
+                            <span>📅</span> Né(e) le : <strong class="fb-field-birthdate" style="color: #0f172a;">...</strong>
+                        </div>
+                        <div class="info-sidebar-item" style="display: flex; align-items: center; gap: 10px; font-size: 13.5px; color: #334155; font-weight: 600;">
+                            <span>🧬</span> Sexe : <strong class="fb-field-gender" style="color: #0f172a;">...</strong>
+                        </div>
+                        <div class="info-sidebar-item" style="display: flex; align-items: center; gap: 10px; font-size: 13.5px; color: #334155; font-weight: 600;">
+                            <span>❤️</span> Situation : <strong class="fb-field-relationship" style="color: #0f172a;">...</strong>
+                        </div>
+                        <div class="info-sidebar-item" style="display: flex; align-items: center; gap: 10px; font-size: 13.5px; color: #334155; font-weight: 600;">
+                            <span>💼</span> Travail : <strong class="fb-field-workplace" style="color: #0f172a;">...</strong>
+                        </div>
+                        <div class="info-sidebar-item" style="display: flex; align-items: center; gap: 10px; font-size: 13.5px; color: #334155; font-weight: 600;">
+                            <span>🎓</span> Université : <strong class="fb-field-university" style="color: #0f172a;">...</strong>
+                        </div>
+                        <div class="info-sidebar-item" style="display: flex; align-items: center; gap: 10px; font-size: 13.5px; color: #334155; font-weight: 600;">
+                            <span>🏫</span> Lycée : <strong class="fb-field-highschool" style="color: #0f172a;">...</strong>
+                        </div>
                     </div>
-                    <div class="info-sidebar-item">
-                        <span>📞</span> Téléphone : <strong id="profileSidebarPhone">...</strong>
-                    </div>
-                    <div class="info-sidebar-item">
-                        <span>📅</span> Né(e) le : <strong id="profileSidebarBirthdate">...</strong>
-                    </div>
-                    <div class="info-sidebar-item">
-                        <span>🧬</span> Sexe : <strong id="profileSidebarGender">...</strong>
-                    </div>
-                    <div class="info-sidebar-item">
-                        <span>❤️</span> Situation : <strong id="profileSidebarRelationship">...</strong>
-                    </div>
-                    <div class="info-sidebar-item">
-                        <span>💼</span> Travaille à : <strong id="profileSidebarWorkplace">...</strong>
-                    </div>
-                    <div class="info-sidebar-item">
-                        <span>🎓</span> Études : <strong id="profileSidebarUniversity">...</strong>
-                    </div>
-                    <div class="info-sidebar-item">
-                        <span>🏫</span> Lycée : <strong id="profileSidebarHighschool">...</strong>
-                    </div>
-                </div>
-
                     
-                    <!-- Zone 🔒 : Affichée uniquement si inconnu -->
-                    <div id="lockedInfoMessage" style="display: none; text-align: center; padding: 12px 5px; color: #64748b; font-size: 13px; line-height: 1.4; font-weight: 500; background: #f8fafc; border-radius: 8px; border: 1px dashed #cbd5e1;">
+                    <!-- Fenêtre d'affichage du cadenas pour les inconnus -->
+                    <div id="fbLockedInfoMessage" style="display: none; text-align: center; padding: 12px 5px; color: #64748b; font-size: 13px; line-height: 1.4; font-weight: 500; background: #f8fafc; border-radius: 8px; border: 1px dashed #cbd5e1;">
                         🔒 Les coordonnées privées sont réservées aux amis acceptés.
                     </div>
-                                    <!-- Zone 🔓 : Affichée pour vous-même ou pour vos amis validés -->
-                <div id="privateInfoContent" style="display: flex; flex-direction: column; gap: 14px; width: 100%;">
-                    <div class="info-sidebar-item">
-                        <span>📍</span> Habite à : <strong id="profileSidebarAddress">...</strong>
-                    </div>
-                    <div class="info-sidebar-item">
-                        <span>📞</span> Téléphone : <strong id="profileSidebarPhone">...</strong>
-                    </div>
-                    <!-- NOUVELLES LIGNES DE PROFIL ENRICHI -->
-                    <div class="info-sidebar-item">
-                        <span>📅</span> Né(e) le : <strong id="profileSidebarBirthdate">...</strong>
-                    </div>
-                    <div class="info-sidebar-item">
-                        <span>🧬</span> Sexe : <strong id="profileSidebarGender">...</strong>
-                    </div>
-                    <div class="info-sidebar-item">
-                        <span>❤️</span> Situation : <strong id="profileSidebarRelationship">...</strong>
-                    </div>
-                    <div class="info-sidebar-item">
-                        <span>💼</span> Travaille à : <strong id="profileSidebarWorkplace">...</strong>
-                    </div>
-                    <div class="info-sidebar-item">
-                        <span>🎓</span> Études : <strong id="profileSidebarUniversity">...</strong>
-                    </div>
-                    <div class="info-sidebar-item">
-                        <span>🏫</span> Lycée : <strong id="profileSidebarHighschool">...</strong>
-                    </div>
-                </div>
+                </aside>
+
+                <!-- 🟥 JOURNAL DES PUBLICATIONS EN CARTES ENTIÈRES -->
+                <section id="userPostsGrid" class="profile-posts-stream" style="flex: 1; display: flex; flex-direction: column; gap: 20px; min-width: 0;"></section>
+            </div>
+
+
+                    
+                    
 
                 </aside>
 
@@ -895,20 +865,22 @@
         <!-- ================= INTÉLLIGENCE JAVASCRIPT DU PROFIL CORRIGÉE ================= -->
     <!-- ================= INTÉLLIGENCE SECURE DE LA FICHE PROFIL (BLOC A) ================= -->
     <script>
-        // 1. Gestion d'ouverture et de fermeture de la modale info
-        function openProfileModal() {
+                function openProfileModal() {
             document.getElementById('editProfileForm').reset();
             
-            const currentBio = document.getElementById('profileBio').innerText;
-            const currentPhone = document.getElementById('profilePhone').innerText.replace("📞 ", "");
-            const currentAddress = document.getElementById('profileAddress').innerText.replace("📍 ", "");
-            
-            document.getElementById('editBio').value = currentBio.includes("Aucune biographie") ? "" : currentBio;
-            document.getElementById('editPhone').value = currentPhone.includes("Non renseigné") ? "" : currentPhone;
-            document.getElementById('editAddress').value = currentAddress.includes("Non renseigné") ? "" : currentAddress;
+            // On récupère les textes affichés à l'écran pour les remettre dans les cases
+            document.getElementById('editBio').value = document.getElementById('profileBio').innerText.includes("Aucune biographie") ? "" : document.getElementById('profileBio').innerText;
+            document.getElementById('editPhone').value = document.querySelector('.fb-field-phone').innerText.includes("Non renseigné") ? "" : document.querySelector('.fb-field-phone').innerText;
+            document.getElementById('editAddress').value = document.querySelector('.fb-field-address').innerText.includes("Non renseigné") ? "" : document.querySelector('.fb-field-address').innerText;
+            document.getElementById('editRelationship').value = document.querySelector('.fb-field-relationship').innerText.includes("Non renseigné") ? "" : document.querySelector('.fb-field-relationship').innerText;
+            document.getElementById('editWorkplace').value = document.querySelector('.fb-field-workplace').innerText.includes("Non renseigné") ? "" : document.querySelector('.fb-field-workplace').innerText;
+            document.getElementById('editUniversity').value = document.querySelector('.fb-field-university').innerText.includes("Non renseigné") ? "" : document.querySelector('.fb-field-university').innerText;
+            document.getElementById('editHighschool').value = document.querySelector('.fb-field-highschool').innerText.includes("Non renseigné") ? "" : document.querySelector('.fb-field-highschool').innerText;
+            document.getElementById('editGender').value = document.querySelector('.fb-field-gender').innerText.includes("Non renseigné") ? "" : document.querySelector('.fb-field-gender').innerText;
             
             document.getElementById('profileModal').style.display = 'flex';
         }
+
 
         function closeProfileModal() {
             document.getElementById('profileModal').style.display = 'none';
@@ -1061,11 +1033,11 @@
             reader.readAsDataURL(file);
         });
 
-                // FORMULAIRE D'ÉDITION SÉCURISÉ STYLE FACEBOOK AVEC EXTRACTION COMPLÈTE
+         // FORMULAIRE D'ÉDITION ENRICHI COMPATIBLE BACKEND
         document.getElementById('editProfileForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
-            // Capture de l'intégralité des champs de saisie
+            // On récupère exactement ce qui est écrit dans la fenêtre
             const bio = document.getElementById('editBio').value;
             const phone = document.getElementById('editPhone').value;
             const address = document.getElementById('editAddress').value;
@@ -1088,19 +1060,19 @@
                 });
 
                 if (response.ok) {
-                    alert("🎉 Profil professionnel Facebook mis à jour avec succès !");
+                    alert("🎉 Vos informations ont été enregistrées avec succès !");
                     closeProfileModal();
                     
-                    // Force la re-synchronisation instantanée de l'écran global
-                    if (typeof fetchUserProfileData === 'function') await fetchUserProfileData();
+                    // On force le rechargement immédiat de la page pour rafraîchir l'écran
+                    window.location.reload();
                 } else {
                     alert("Erreur lors de l'enregistrement des informations.");
                 }
             } catch (err) {
-                console.error("Erreur réseau formulaire complet :", err);
-                alert("Impossible de joindre le serveur pour sauvegarder.");
+                console.error("Erreur formulaire :", err);
             }
         });
+
 
 
 
@@ -1258,7 +1230,7 @@
             }
         });
 
-                // =================================================================
+            // =================================================================
         // 7. INGENIERIE DES ACTIONS ENVOI ET ACCEPTATION DE RELATION
         // =================================================================
         async function sendRequest(receiverId) {
@@ -1270,7 +1242,7 @@
                 });
                 if (response.ok) {
                     alert("Demande d'ami envoyée avec succès !");
-                    fetchUserProfileData();
+                    if (typeof fetchUserProfileData === 'function') fetchUserProfileData();
                 }
             } catch (err) {
                 console.error("Erreur envoi demande :", err);
@@ -1286,23 +1258,23 @@
                 });
                 if (response.ok) {
                     alert(`Vous êtes désormais ami avec ${fullname} !`);
-                    fetchUserProfileData();
+                    if (typeof fetchUserProfileData === 'function') fetchUserProfileData();
+                    if (typeof loadMyPosts === 'function') loadMyPosts();
                 }
             } catch (err) {
                 console.error("Erreur acceptation :", err);
             }
         }
 
-                // =================================================================
+        // =================================================================
         // 📡 COMPLÉMENT RELATIONNEL : RADAR COMPTEURS & AMIS EN COMMUN
-                // 2. LOGIQUE COMPTEURS D'AMIS ET COMPOSANT MINIATURES (CORRIGÉ POUR LES AUTRES PROFILS)
+        // =================================================================
         async function loadFriendsCounters(targetUserId, showMutual) {
             try {
                 const response = await fetch(`/friends/mutual/${targetUserId}`);
                 if (response.ok) {
                     const resData = await response.json();
                     
-                    // On met à jour TOUS les compteurs d'amis trouvés dans la page (anti-doublon)
                     const friendsTexts = document.querySelectorAll('#friendsCountText');
                     friendsTexts.forEach(el => {
                         el.innerText = `${resData.totalFriends} ${resData.totalFriends > 1 ? 'amis' : 'ami'}`;
@@ -1313,7 +1285,6 @@
                     const avatarsContainers = document.querySelectorAll('#mutualAvatarsContainer');
                     
                     if (showMutual) {
-                        // Profil tiers : On allume et on affiche les vrais chiffres de MySQL
                         mutualTexts.forEach(el => {
                             el.innerText = `${resData.mutualCount} en commun`;
                             el.style.setProperty('display', 'inline', 'important');
@@ -1327,7 +1298,6 @@
                             }).join('');
                         });
                     } else {
-                        // Mon profil : On éteint tout
                         mutualTexts.forEach(el => el.style.setProperty('display', 'none', 'important'));
                         separators.forEach(el => el.style.setProperty('display', 'none', 'important'));
                         avatarsContainers.forEach(el => { el.innerHTML = ''; el.style.setProperty('display', 'none', 'important'); });
@@ -1335,145 +1305,108 @@
                 }
             } catch (err) { console.error("Erreur compteurs :", err); }
         }
+        // =================================================================
+        // DÉCLENCHEMENT INITIAL SYNCHRONISÉ ET INJECTEUR UNIQUE FACEBOOK
+        // =================================================================
+        window.addEventListener('DOMContentLoaded', async () => {
+            // 1. Chargement initial de vos fonctions d'origine
+            if (typeof fetchUserProfileData === 'function') await fetchUserProfileData();
+            if (typeof loadMyPosts === 'function') await loadMyPosts();
 
-
-
-        // Actions de clic pour envoyer et accepter les demandes d'amis depuis le profil
-        async function sendRequest(receiverId) {
-            try {
-                const response = await fetch('/friends/request', { 
-                    method: 'POST', 
-                    headers: { 'Content-Type': 'application/json' }, 
-                    body: JSON.stringify({ receiverId }) 
-                });
-                if (response.ok) {
-                    alert("Demande d'ami envoyée avec succès !");
-                    fetchUserProfileData(); // Rafraîchit le bouton
+            // 2. Traitement du Radar de Chat automatique (Boîte de réception)
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('openChat') === 'true') {
+                const targetFullname = document.getElementById('profileFullname').innerText;
+                const targetUserId = urlParams.get('id');
+                if (targetUserId && targetFullname) {
+                    setTimeout(() => { openChatWindow(targetUserId, targetFullname); }, 500);
                 }
-            } catch (err) { console.error("Erreur envoi demande :", err); }
-        }
+            }
 
-        async function acceptDirectRequest(requesterId, fullname) {
-            try {
-                const response = await fetch('/friends/respond', { 
-                    method: 'POST', 
-                    headers: { 'Content-Type': 'application/json' }, 
-                    body: JSON.stringify({ requesterId, action: 'accepted' }) 
-                });
-                if (response.ok) {
-                    alert(`Vous êtes désormais ami avec ${fullname} !`);
-                    fetchUserProfileData(); // Débloque le chat et le cadenas
-                    if (typeof loadMyPosts === 'function') loadMyPosts(); // Recharge le journal
-                }
-            } catch (err) { console.error("Erreur acceptation :", err); }
-        }
-
-
-                       window.addEventListener('DOMContentLoaded', async () => {
-            // Exécution de vos fonctions d'origine
-            await fetchUserProfileData();
-            await loadMyPosts();
-
-            // =============================================================
-            // 🛡️ RE-SYNCHRONISATION ET CALCUL DIRECTIONNEL DES COMPTEURS
-            // =============================================================
+            // 3. Injecteur de force pour les données personnelles & Cadenas
             setTimeout(async () => {
-                const urlParams = new URLSearchParams(window.location.search);
-                let targetUserId = urlParams.get('id');
-
-                // 1. Nettoyage absolu du doublon flottant à droite
-                const allCounterBlocks = document.querySelectorAll('.profile-social-counters');
-                if (allCounterBlocks.length > 1) {
-                    for (let i = 1; i < allCounterBlocks.length; i++) {
-                        allCounterBlocks[i].remove();
-                    }
-                }
-
-                // 2. Si targetUserId est vide, on récupère l'ID de la session de Pape
-                if (!targetUserId) {
-                    try {
+                try {
+                    let targetUserId = urlParams.get('id');
+                    
+                    // Récupération de l'ID si on est sur notre propre profil
+                    if (!targetUserId) {
                         const sessionRes = await fetch('/auth/me');
                         if (sessionRes.ok) {
                             const sessionData = await sessionRes.json();
-                            // Si c'est un tableau, on prend le premier élément
-                            const myData = Array.isArray(sessionData) ? sessionData[0] : sessionData;
-                            if (myData && myData.id) {
-                                targetUserId = myData.id;
+                            const myData = Array.isArray(sessionData) ? sessionData : sessionData;
+                            if (myData && myData.id) targetUserId = myData.id;
+                        }
+                    }
+
+                    if (targetUserId) {
+                        // Interroger MySQL pour obtenir le profil complet à afficher
+                        const userRes = urlParams.get('id') ? await fetch(`/auth/public-users/${targetUserId}`) : await fetch('/auth/me');
+                        
+                        if (userRes.ok) {
+                            let u = await userRes.json();
+                            if (Array.isArray(u)) u = u;
+
+                            if (u) {
+                                const gridContainer = document.getElementById('fbPrivateGridContainer');
+                                const lockedMessage = document.getElementById('fbLockedInfoMessage');
+
+                                // Vérification du statut d'amitié pour la vie privée
+                                let isFriendOrMe = false;
+                                if (!urlParams.get('id')) {
+                                    isFriendOrMe = true; // C'est mon profil
+                                    loadFriendsCounters(targetUserId, false);
+                                } else {
+                                    const relRes = await fetch(`/friends/status/${targetUserId}`);
+                                    if (relRes.ok) {
+                                        const rel = await relRes.json();
+                                        if (rel.status === 'friends') isFriendOrMe = true;
+                                    }
+                                    loadFriendsCounters(targetUserId, true);
+                                }
+
+                                                                // C. APPLICATION DU FILTRE ET INJECTION VISUELLE SÉCURISÉE
+                                if (isFriendOrMe) {
+                                    if (gridContainer) gridContainer.style.setProperty('display', 'grid', 'important');
+                                    if (lockedMessage) lockedMessage.style.setProperty('display', 'none', 'important');
+
+                                    const txtAddress = document.querySelector('.fb-field-address');
+                                    const txtPhone = document.querySelector('.fb-field-phone');
+                                    const txtBirth = document.querySelector('.fb-field-birthdate');
+                                    const txtGender = document.querySelector('.fb-field-gender');
+                                    const txtRelationship = document.querySelector('.fb-field-relationship');
+                                    const txtWorkplace = document.querySelector('.fb-field-workplace');
+                                    const txtUniversity = document.querySelector('.fb-field-university');
+                                    const txtHighschool = document.querySelector('.fb-field-highschool');
+
+                                    // Remplissage avec vérification stricte des variables retournées par le serveur
+                                    if (txtAddress) txtAddress.innerText = u.address || "Non renseigné";
+                                    if (txtPhone) txtPhone.innerText = u.phone || "Non renseigné";
+                                    if (txtGender) txtGender.innerText = u.gender || "Non renseigné";
+                                    if (txtRelationship) txtRelationship.innerText = u.relationship_status || u.relationship || "Non renseigné";
+                                    if (txtWorkplace) txtWorkplace.innerText = u.workplace || "Non renseigné";
+                                    if (txtUniversity) txtUniversity.innerText = u.education_university || u.university || "Non renseigné";
+                                    if (txtHighschool) txtHighschool.innerText = u.education_highschool || u.highschool || "Non renseigné";
+                                    
+                                    // Sécurisation de la date de naissance pour éviter tout plantage
+                                    if (txtBirth) {
+                                        if (u.birthdate && u.birthdate !== "0000-00-00") {
+                                            const d = new Date(u.birthdate);
+                                            txtBirth.innerText = isNaN(d.getTime()) ? "Non renseigné" : d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+                                        } else {
+                                            txtBirth.innerText = "Non renseigné";
+                                        }
+                                    }
+                                }
+
                             }
                         }
-                    } catch (err) {
-                        console.error("Erreur lecture session pour compteurs :", err);
                     }
+                } catch (err) {
+                    console.error("Erreur injecteur :", err);
                 }
-
-                // 3. Lancement de la requête MySQL avec le bon ID trouvé
-                if (targetUserId) {
-                    try {
-                        const response = await fetch(`/friends/mutual/${targetUserId}`);
-                        if (response.ok) {
-                            const resData = await response.json();
-                            
-                            const friendsText = document.getElementById('friendsCountText');
-                            const mutualText = document.getElementById('mutualCountText');
-                            const separator = document.getElementById('socialSeparator');
-                            const avatarsContainer = document.getElementById('mutualAvatarsContainer');
-
-                            // Affichage du vrai nombre total d'amis calculé par MySQL
-                            if (friendsText) {
-                                friendsText.innerText = `${resData.totalFriends} ${resData.totalFriends > 1 ? 'amis' : 'ami'}`;
-                            }
-
-                            // Gestion de l'affichage selon le profil (Moi ou Tiers)
-                            if (urlParams.get('id')) {
-                                // Profil d'un autre : On montre le en commun
-                                if (mutualText) {
-                                    mutualText.innerText = `${resData.mutualCount} en commun`;
-                                    mutualText.style.setProperty('display', 'inline', 'important');
-                                }
-                                if (separator) separator.style.setProperty('display', 'inline', 'important');
-                                
-                                if (avatarsContainer && resData.mutualList && resData.mutualList.length > 0) {
-                                    avatarsContainer.style.setProperty('display', 'inline-flex', 'important');
-                                    avatarsContainer.innerHTML = resData.mutualList.slice(0, 3).map(f => {
-                                        const url = f.avatar_url || "https://flaticon.com";
-                                        return `<img src="${url}" class="mutual-mini-avatar" title="${f.fullname}" style="width:24px; height:24px; border-radius:50%; border:2px solid white; margin-left:-8px; object-fit:cover;">`;
-                                    }).join('');
-                                }
-                            } else {
-                                // Mon propre profil : On cache le en commun définitivement
-                                if (mutualText) mutualText.style.setProperty('display', 'none', 'important');
-                                if (separator) separator.style.setProperty('display', 'none', 'important');
-                                if (avatarsContainer) avatarsContainer.style.setProperty('display', 'none', 'important');
-                            }
-                        }
-                    } catch (err) {
-                        console.error("Erreur force compteurs :", err);
-                    }
-                }
-                // =============================================================
-// 🛡️ RE-SYNCHRONISATION ET AFFICHAGE DES CHAMPS STYLE FACEBOOK
-// =============================================================
-if (typeof data !== 'undefined' && data) {
-    const u = data; // On utilise la vraie variable 'data' de votre serveur
-    
-    // Remplissage chirurgical sans crash
-    const elBirth = document.getElementById('profileSidebarBirthdate');
-    const elGend = document.getElementById('profileSidebarGender');
-    const elRel = document.getElementById('profileSidebarRelationship');
-    const elWork = document.getElementById('profileSidebarWorkplace');
-    const elUniv = document.getElementById('profileSidebarUniversity');
-    const elHigh = document.getElementById('profileSidebarHighschool');
-
-    if (elBirth) elBirth.innerText = u.birthdate ? new Date(u.birthdate).toLocaleDateString('fr-FR') : "Non renseigné";
-    if (elGend) elGend.innerText = u.gender || "Non renseigné";
-    if (elRel) elRel.innerText = u.relationship_status || "Non renseigné";
-    if (elWork) elWork.innerText = u.workplace || "Non renseigné";
-    if (elUniv) elUniv.innerText = u.education_university || "Non renseigné";
-    if (elHigh) elHigh.innerText = u.education_highschool || "Non restriction";
-}
-
-            }, 400);
+            }, 600);
         });
+
 
 
     </script>

@@ -136,27 +136,29 @@ exports.updateProfileInfos = async (req, res) => {
 
 // ================= RECULLER L'ÉTAPE 2 ICI PROPREMENT =================
 // 6. LIRE LE PROFIL PUBLIC D'UN AUTRE MEMBRE (ACCESSIBLE À TOUS)
+// EXPLOITATION DU PROFIL PUBLIC ENRICHI (STYLE FACEBOOK)
 exports.getPublicProfile = async (req, res) => {
     try {
-        if (!req.session || !req.session.userId) {
-            return res.status(401).send("Non connecté");
-        }
-
         const { id } = req.params;
         
-        // Sélection des informations publiques uniquement
-        const query = 'SELECT id, fullname, bio, phone, address, avatar_url FROM users WHERE id = ?';
+        // AJOUT DES 6 COLONNES CRUCIALES DANS LE SELECT DE L'AMI VISITÉ
+        const query = `
+            SELECT id, fullname, bio, phone, address, avatar_url,
+                   birthdate, gender, relationship_status, workplace, 
+                   education_university, education_highschool 
+            FROM users WHERE id = ?
+        `;
+        
         const [rows] = await db.execute(query, [id]);
 
-        if (!rows || rows.length === 0) {
-            return res.status(404).send("Membre introuvable");
+        if (rows.length === 0) {
+            return res.status(404).send("Utilisateur introuvable");
         }
 
-        // On renvoie la première ligne trouvée au format JSON
         res.json(rows[0]);
     } catch (error) {
-        console.error("Erreur profil public :", error);
-        res.status(500).send("Erreur serveur : " + error.message);
+        console.error("❌ Erreur getPublicProfile :", error.message);
+        res.status(500).send("Erreur lors de la récupération du profil");
     }
 };
 
